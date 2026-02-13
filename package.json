@@ -1,0 +1,36 @@
+{
+  "name": "@community-data-libraries/web",
+  "version": "1.0.0",
+  "description": "Community Data Libraries - A curated collection of data science resources and community-submitted materials",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/community-data-libraries/web.git"
+  },
+  "keywords": [
+    "data-science",
+    "community",
+    "library",
+    "resources",
+    "astro",
+    "react"
+  ],
+  "author": "Community Data Libraries",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/community-data-libraries/web/issues"
+  },
+  "homepage": "https://github.com/community-data-libraries/web#readme",
+  "dependencies": {
+    "@astrojs/react": "^4.4.2",
+    "astro": "^5.17.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}

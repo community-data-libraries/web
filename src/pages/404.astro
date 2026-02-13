@@ -1,0 +1,106 @@
+---
+import Layout from '@layouts/Layout.astro';
+---
+
+<Layout 
+  title="404 - Page Not Found"
+  description="The page you're looking for doesn't exist."
+>
+  <div class="error-container">
+    <div class="error-content">
+      <h1 class="error-code">404</h1>
+      <h2 class="error-title">Page Not Found</h2>
+      <p class="error-description">
+        Oops! The page you're looking for doesn't exist or has been moved.
+      </p>
+      <div class="error-actions">
+        <a href="/web/" class="button">
+          Return to Home
+        </a>
+        <a href="/web/master-library" class="button button-secondary">
+          Browse Library
+        </a>
+      </div>
+    </div>
+    <div class="error-illustration">
+      <span class="emoji">🔍</span>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: var(--space-8);
+  }
+
+  .error-content {
+    max-width: 600px;
+  }
+
+  .error-code {
+    font-size: 8rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: var(--space-4);
+    line-height: 1;
+  }
+
+  .error-title {
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--space-4);
+  }
+
+  .error-description {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-8);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .error-actions {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .button-secondary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+  }
+
+  .button-secondary:hover {
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  .error-illustration {
+    margin-top: var(--space-12);
+  }
+
+  .emoji {
+    font-size: 6rem;
+    opacity: 0.5;
+  }
+
+  @media (max-width: 768px) {
+    .error-code {
+      font-size: 6rem;
+    }
+
+    .error-title {
+      font-size: var(--font-size-2xl);
+    }
+
+    .emoji {
+      font-size: 4rem;
+    }
+  }
+</style>

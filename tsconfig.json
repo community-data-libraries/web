@@ -1,0 +1,40 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    // Enable strict type checking for better code quality
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    
+    // Module resolution
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    
+    // JSX support for React
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    
+    // Path aliases for cleaner imports
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@content/*": ["src/content/*"],
+      "@data/*": ["src/data/*"]
+    },
+    
+    // Additional settings
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", ".astro"]
+}

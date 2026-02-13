@@ -1,0 +1,299 @@
+---
+import Layout from '@layouts/Layout.astro';
+---
+
+<Layout 
+  title="Home"
+  description="Discover curated data science resources and contribute to our growing community library of datasets, tools, guides, and research papers."
+>
+  <div class="hero">
+    <h1 class="hero-title">
+      <span class="gradient-text">Community Data Libraries</span>
+    </h1>
+    <p class="hero-description">
+      A curated collection of data science resources and community-submitted materials 
+      for researchers, students, and practitioners.
+    </p>
+  </div>
+
+  <section class="features">
+    <div class="feature-grid">
+      <article class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h2>Master Library</h2>
+        <p>
+          Access our carefully curated collection of high-quality datasets, tools, 
+          and resources for data science and research.
+        </p>
+        <a href="/web/master-library" class="feature-link">
+          Explore Master Library →
+        </a>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h2>Community Library</h2>
+        <p>
+          Browse resources submitted by community members from around the world. 
+          Find unique datasets and tools shared by practitioners.
+        </p>
+        <a href="/web/community-library" class="feature-link">
+          Browse Community Resources →
+        </a>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">✨</div>
+        <h2>Submit Resources</h2>
+        <p>
+          Share your own datasets, tools, or guides with the community. 
+          Help others discover valuable resources.
+        </p>
+        <a href="/web/submit" class="feature-link">
+          Submit a Resource →
+        </a>
+      </article>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="about-content">
+      <h2>About the Project</h2>
+      <p>
+        Community Data Libraries is an open-source initiative to democratize access 
+        to data science resources. We believe that knowledge and data should be 
+        accessible to everyone, regardless of their background or resources.
+      </p>
+      <p>
+        Our platform combines expert curation with community contributions to create 
+        a comprehensive library of datasets, analytical tools, learning guides, and 
+        research papers.
+      </p>
+      <div class="cta-buttons">
+        <a href="/web/about" class="button">
+          Learn More About Us
+        </a>
+        <a href="https://github.com/community-data-libraries/web" class="button button-secondary" target="_blank" rel="noopener noreferrer">
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">500+</div>
+        <div class="stat-label">Curated Resources</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">1000+</div>
+        <div class="stat-label">Community Submissions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">10k+</div>
+        <div class="stat-label">Active Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Open Source</div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Hero Section */
+  .hero {
+    text-align: center;
+    padding: var(--space-16) var(--space-4);
+    margin-bottom: var(--space-12);
+  }
+
+  .hero-title {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--space-6);
+    line-height: 1.2;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-description {
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* Features Section */
+  .features {
+    margin-bottom: var(--space-16);
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    margin-bottom: var(--space-12);
+  }
+
+  @media (min-width: 768px) {
+    .feature-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .feature-card {
+    background-color: var(--color-surface);
+    padding: var(--space-8);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .feature-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+  }
+
+  .feature-card h2 {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .feature-card p {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-6);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .feature-link {
+    color: var(--color-primary);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .feature-link:hover {
+    color: var(--color-primary-dark);
+  }
+
+  /* About Section */
+  .about-section {
+    background-color: var(--color-surface);
+    padding: var(--space-12) var(--space-8);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-16);
+  }
+
+  .about-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .about-content h2 {
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--space-6);
+    text-align: center;
+  }
+
+  .about-content p {
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-relaxed);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-4);
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    margin-top: var(--space-8);
+    flex-wrap: wrap;
+  }
+
+  .button-secondary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+  }
+
+  .button-secondary:hover {
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  /* Stats Section */
+  .stats-section {
+    margin-bottom: var(--space-12);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: var(--space-6);
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+  }
+
+  .stat-number {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: var(--font-size-3xl);
+    }
+
+    .hero-description {
+      font-size: var(--font-size-lg);
+    }
+
+    .hero {
+      padding: var(--space-12) var(--space-4);
+    }
+
+    .about-section {
+      padding: var(--space-8) var(--space-4);
+    }
+
+    .stat-number {
+      font-size: var(--font-size-3xl);
+    }
+  }
+</style>
