@@ -6,9 +6,10 @@ export default defineConfig({
   // Enable React integration for interactive components
   integrations: [react()],
   
-  // Configure for hybrid rendering (SSR + SSG)
-  // This allows mixing static and server-rendered pages
-  output: 'hybrid',
+  // Configure for static site generation (SSG)
+  // All pages are pre-rendered at build time
+  // This allows deployment to any static hosting (GitHub Pages, Netlify, Vercel, etc.)
+  output: 'static',
   
   // Site configuration for SEO and deployment
   site: 'https://community-data-libraries.github.io',
