@@ -1,0 +1,21 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.41942, 37.77493]
+      },
+      "properties": {
+        "id": "example-san-francisco-dataset",
+        "name": "Example Dataset in San Francisco",
+        "category": "dataset",
+        "tags": ["open-data", "transport"],
+        "region": "US",
+        "sourceUrl": "https://example.org/datasets/sf-transport",
+        "updatedAt": "2026-02-17T00:00:00Z"
+      }
+    }
+  ]
+}

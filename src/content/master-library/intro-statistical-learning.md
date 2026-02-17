@@ -1,13 +1,13 @@
 ---
-title: "A Gentle Introduction to Statistical Learning"
-description: "A comprehensive guide for beginners covering fundamental concepts in statistical learning, including supervised and unsupervised learning methods."
-author: "Data Science Community"
+title: 'A Gentle Introduction to Statistical Learning'
+description: 'A comprehensive guide for beginners covering fundamental concepts in statistical learning, including supervised and unsupervised learning methods.'
+author: 'Data Science Community'
 publishedDate: 2023-11-20
-tags: ["statistics", "machine-learning", "tutorial", "education", "beginner-friendly"]
-category: "guide"
-url: "https://www.statlearning.com/"
+tags: ['statistics', 'machine-learning', 'tutorial', 'education', 'beginner-friendly']
+category: 'guide'
+url: 'https://www.statlearning.com/'
 featured: false
-difficulty: "beginner"
+difficulty: 'beginner'
 ---
 
 # A Gentle Introduction to Statistical Learning
@@ -17,6 +17,7 @@ This guide provides an accessible introduction to statistical learning methods, 
 ## What is Statistical Learning?
 
 Statistical learning refers to a set of tools for understanding data. These tools can be broadly classified into two categories:
+
 - **Supervised learning**: Building models to predict or estimate an output based on one or more inputs
 - **Unsupervised learning**: Learning relationships and structure from data without a specific output to predict
 
@@ -25,12 +26,14 @@ Statistical learning refers to a set of tools for understanding data. These tool
 ### 1. Supervised Learning
 
 In supervised learning, we have:
+
 - **Input variables** (X): Also called predictors, features, or independent variables
 - **Output variable** (Y): Also called response or dependent variable
 
 The goal is to learn a function f such that Y ≈ f(X)
 
 **Common Methods:**
+
 - Linear Regression
 - Logistic Regression
 - Decision Trees
@@ -43,6 +46,7 @@ The goal is to learn a function f such that Y ≈ f(X)
 In unsupervised learning, we only have input variables (X) without corresponding outputs. The goal is to learn the underlying structure or distribution in the data.
 
 **Common Methods:**
+
 - Clustering (K-means, Hierarchical)
 - Principal Component Analysis (PCA)
 - Association Rules
@@ -59,12 +63,15 @@ One of the fundamental concepts in statistical learning is the bias-variance tra
 ## Model Evaluation
 
 ### Training vs. Test Error
+
 - Training error: How well your model fits the training data
 - Test error: How well your model performs on unseen data
 - Overfitting: When training error is low but test error is high
 
 ### Cross-Validation
+
 A technique to estimate test error by:
+
 1. Splitting data into training and validation sets
 2. Training on training set
 3. Evaluating on validation set
@@ -74,6 +81,7 @@ A technique to estimate test error by:
 ## Feature Selection
 
 Choosing the right features is crucial:
+
 - **More features** ≠ Better model
 - Too many features can lead to overfitting
 - Feature engineering can improve model performance
@@ -97,6 +105,7 @@ Choosing the right features is crucial:
 ## Next Steps
 
 After mastering these basics, you can explore:
+
 - Deep Learning
 - Ensemble Methods
 - Bayesian Methods
@@ -118,4 +127,4 @@ After mastering these basics, you can explore:
 
 ---
 
-*This guide is meant to be a starting point. Statistical learning is a vast field, and continuous learning and practice are essential for mastery.*
+_This guide is meant to be a starting point. Statistical learning is a vast field, and continuous learning and practice are essential for mastery._

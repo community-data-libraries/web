@@ -1,13 +1,13 @@
 ---
-title: "UCI Machine Learning Repository"
-description: "A comprehensive collection of databases, domain theories, and data generators widely used by the machine learning community for empirical analysis of ML algorithms."
-author: "UC Irvine"
+title: 'UCI Machine Learning Repository'
+description: 'A comprehensive collection of databases, domain theories, and data generators widely used by the machine learning community for empirical analysis of ML algorithms.'
+author: 'UC Irvine'
 publishedDate: 2023-01-15
-tags: ["machine-learning", "datasets", "classification", "regression", "research"]
-category: "dataset"
-url: "https://archive.ics.uci.edu/ml/index.php"
+tags: ['machine-learning', 'datasets', 'classification', 'regression', 'research']
+category: 'dataset'
+url: 'https://archive.ics.uci.edu/ml/index.php'
 featured: true
-difficulty: "beginner"
+difficulty: 'beginner'
 ---
 
 # UCI Machine Learning Repository
@@ -17,6 +17,7 @@ The UCI Machine Learning Repository is one of the oldest and most well-known sou
 ## Overview
 
 The repository contains over 600 datasets spanning various domains including:
+
 - Classification problems
 - Regression tasks
 - Clustering datasets
@@ -33,6 +34,7 @@ The repository contains over 600 datasets spanning various domains including:
 ## Popular Datasets
 
 Some of the most popular datasets include:
+
 - Iris flower dataset
 - Wine quality dataset
 - Adult income dataset
@@ -42,6 +44,7 @@ Some of the most popular datasets include:
 ## Getting Started
 
 Visit the repository and browse datasets by:
+
 - Task type (classification, regression, etc.)
 - Attribute type (categorical, numerical, etc.)
 - Subject area (business, computer science, life sciences, etc.)
