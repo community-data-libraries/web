@@ -7,6 +7,8 @@ const navItems = [
   { href: '/web/', label: 'Home' },
   { href: '/web/master-library', label: 'Master Library' },
   { href: '/web/community-library', label: 'Community Library' },
+  { href: '/web/maps', label: 'Map' },
+  { href: '/web/data-preview', label: 'Data Preview' },
   { href: '/web/submit', label: 'Submit Resource' },
   { href: '/web/about', label: 'About' },
 ];
@@ -29,8 +31,8 @@ function isActive(href: string, currentPath: string): boolean {
     </div>
 
     <!-- Mobile menu button -->
-    <button 
-      class="mobile-menu-button" 
+    <button
+      class="mobile-menu-button"
       aria-label="Toggle navigation menu"
       aria-expanded="false"
       id="mobile-menu-button"
@@ -44,8 +46,8 @@ function isActive(href: string, currentPath: string): boolean {
     <ul class="nav-links" id="nav-links">
       {navItems.map((item) => (
         <li class="nav-item">
-          <a 
-            href={item.href} 
+          <a
+            href={item.href}
             class={`nav-link ${isActive(item.href, currentPath) ? 'active' : ''}`}
             aria-current={isActive(item.href, currentPath) ? 'page' : undefined}
           >
@@ -73,7 +75,8 @@ function isActive(href: string, currentPath: string): boolean {
 
       // Close menu when clicking outside
       document.addEventListener('click', (event) => {
-        const target = event.target as HTMLElement;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
         if (!target.closest('.navbar')) {
           navLinks.classList.remove('active');
           mobileMenuButton.classList.remove('active');
@@ -196,7 +199,9 @@ function isActive(href: string, currentPath: string): boolean {
     padding: var(--space-4) var(--space-6);
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
+    transition:
+      max-height 0.3s ease,
+      padding 0.3s ease;
   }
 
   .nav-links.active {
@@ -214,7 +219,9 @@ function isActive(href: string, currentPath: string): boolean {
     color: var(--color-text);
     font-weight: 500;
     border-radius: var(--radius-md);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   .nav-link:hover {

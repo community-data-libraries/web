@@ -1,0 +1,58 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const resources = await getCollection('master-library');
+const categories = ['dataset', 'tool', 'guide', 'paper'] as const;
+---
+
+<Layout title="Master Library" description="All curated resources in the CDL master library">
+  <section>
+    <h1>Master Library</h1>
+    <p>Browse all curated entries. Use categories to scan quickly.</p>
+
+    {categories.map((cat) => (
+      <section>
+        <h2 style="margin-top: var(--space-8)">{cat[0].toUpperCase() + cat.slice(1)}</h2>
+        <ul class="card-grid">
+          {resources
+            .filter((r) => r.data.category === cat)
+            .map((item) => (
+              <li class="card">
+                <h3>{item.data.title}</h3>
+                <p>{item.data.description}</p>
+                {item.data.tags && item.data.tags.length > 0 && (
+                  <p class="tags">Tags: {item.data.tags.join(', ')}</p>
+                )}
+                {item.data.url && (
+                  <p><a class="button" href={item.data.url} target="_blank" rel="noopener noreferrer">Visit</a></p>
+                )}
+              </li>
+            ))}
+        </ul>
+      </section>
+    ))}
+  </section>
+
+  <style>
+    .card-grid {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 768px) { .card-grid { grid-template-columns: 1fr 1fr; } }
+
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tags { color: var(--color-text-muted); }
+  </style>
+</Layout>

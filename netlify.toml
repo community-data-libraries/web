@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Optional: Set headers or redirects here if needed
+# For Astro with a non-root base path (e.g., '/web'), ensure routes/account for the base.
+# If deploying at site root on Netlify, consider adjusting 'base' in astro.config.mjs.
