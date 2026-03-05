@@ -61,6 +61,36 @@ const listResources = sortedResources.filter(
   (resource) => !featuredResources.some((featured) => featured.id === resource.id),
 );
 
+const typeCounts = visibleResources.reduce(
+  (accumulator, resource) => {
+    accumulator[resource.data.category] += 1;
+    return accumulator;
+  },
+  {
+    dataset: 0,
+    tool: 0,
+    guide: 0,
+    paper: 0,
+  },
+);
+
+const clearFiltersHref = `/web/master-library?audience=${audience}`;
+const activeFilters = [
+  selectedCategory ? `Theme: ${selectedCategory}` : '',
+  selectedTag ? `Tag: ${selectedTag}` : '',
+  query ? `Search: ${query}` : '',
+].filter(Boolean);
+
+function audienceHref(nextAudience: AudienceRole): string {
+  const params = new URLSearchParams();
+  params.set('audience', nextAudience);
+  if (selectedCategory) params.set('category', selectedCategory);
+  if (selectedTag) params.set('tag', selectedTag);
+  if (query) params.set('q', query);
+  if (sort) params.set('sort', sort);
+  return `/web/master-library?${params.toString()}`;
+}
+
 function formatDate(date: Date | undefined): string {
   if (!date) return 'Not specified';
   return date.toLocaleDateString('en-US', {
@@ -72,129 +102,117 @@ function formatDate(date: Date | undefined): string {
 ---
 
 <Layout title="Master Library" description="All curated resources in the CDL master library">
-  <section class="catalog-shell">
-    <aside class="filters-panel">
+  <section class="library-page">
+    <aside class="sidebar">
       <h2>Filters</h2>
+      <form method="get" action="/web/master-library" class="filters-form">
+        <input type="hidden" name="audience" value={audience} />
 
-      <section class="filter-block">
-        <h3>View Types</h3>
-        <ul class="bullet-list">
-          <li><span class="dot"></span>Datasets</li>
-          <li><span class="dot"></span>Guides</li>
-          <li><span class="dot"></span>Tools</li>
-          <li><span class="dot"></span>Papers</li>
+        <label>
+          <span>Search</span>
+          <input type="search" name="q" value={query} placeholder="Search title, description, or themes" />
+        </label>
+
+        <label>
+          <span>Theme</span>
+          <select name="category">
+            <option value="">All themes</option>
+            {allThemes.map((theme) => (
+              <option value={theme} selected={selectedCategory === theme}>{theme}</option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Tag</span>
+          <select name="tag">
+            <option value="">All tags</option>
+            {allTags.map((tag) => (
+              <option value={tag} selected={selectedTag === tag}>{tag}</option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Sort</span>
+          <select name="sort">
+            <option value="updated" selected={sort === 'updated'}>Most recent</option>
+            <option value="featured" selected={sort === 'featured'}>Featured first</option>
+            <option value="title" selected={sort === 'title'}>A-Z</option>
+          </select>
+        </label>
+
+        <div class="filter-actions">
+          <button type="submit" class="button">Apply</button>
+          <a href={clearFiltersHref} class="reset-link">Reset</a>
+        </div>
+      </form>
+
+      <section class="type-panel">
+        <h3>Resource Types</h3>
+        <ul>
+          <li><span>Datasets</span><strong>{typeCounts.dataset}</strong></li>
+          <li><span>Guides</span><strong>{typeCounts.guide}</strong></li>
+          <li><span>Tools</span><strong>{typeCounts.tool}</strong></li>
+          <li><span>Papers</span><strong>{typeCounts.paper}</strong></li>
         </ul>
       </section>
-
-      <form method="get" action="/web/master-library" class="filter-block">
-        <input type="hidden" name="audience" value={audience} />
-        <input type="hidden" name="q" value={query} />
-        <input type="hidden" name="sort" value={sort} />
-        <input type="hidden" name="tag" value={selectedTag} />
-
-        <div class="filter-header">
-          <h3>Category</h3>
-          <a href={`/web/master-library?audience=${audience}&q=${encodeURIComponent(query)}&sort=${sort}&tag=${encodeURIComponent(selectedTag)}`}>Clear</a>
-        </div>
-
-        <label class="radio-option">
-          <input type="radio" name="category" value="" checked={!selectedCategory} onchange="this.form.submit()" />
-          <span>All themes</span>
-        </label>
-        {allThemes.map((theme) => (
-          <label class="radio-option">
-            <input
-              type="radio"
-              name="category"
-              value={theme}
-              checked={selectedCategory === theme}
-              onchange="this.form.submit()"
-            />
-            <span>{theme}</span>
-          </label>
-        ))}
-      </form>
-
-      <form method="get" action="/web/master-library" class="filter-block">
-        <input type="hidden" name="audience" value={audience} />
-        <input type="hidden" name="q" value={query} />
-        <input type="hidden" name="sort" value={sort} />
-        <input type="hidden" name="category" value={selectedCategory} />
-
-        <h3>Tags</h3>
-        <select name="tag" onchange="this.form.submit()">
-          <option value="">Choose tag</option>
-          {allTags.map((tag) => (
-            <option value={tag} selected={selectedTag === tag}>{tag}</option>
-          ))}
-        </select>
-      </form>
     </aside>
 
-    <div class="catalog-main">
-      <header class="catalog-header">
+    <div class="content">
+      <header class="content-header">
         <div>
-          <h1>Master Library Catalog</h1>
+          <h1>Master Library</h1>
           <p>
             Showing <strong>{audienceLabel(audience)}</strong> view.
             {audience !== 'teacher' && ' Sensitive datasets are excluded.'}
           </p>
         </div>
-
         <div class="audience-switch">
-          <a href="/web/master-library?audience=teacher" class={audience === 'teacher' ? 'active' : undefined}>Teacher</a>
-          <a href="/web/master-library?audience=student" class={audience === 'student' ? 'active' : undefined}>Student</a>
-          <a href="/web/master-library?audience=community" class={audience === 'community' ? 'active' : undefined}>Community</a>
+          <a href={audienceHref('teacher')} class={audience === 'teacher' ? 'active' : undefined}>Teacher</a>
+          <a href={audienceHref('student')} class={audience === 'student' ? 'active' : undefined}>Student</a>
+          <a href={audienceHref('community')} class={audience === 'community' ? 'active' : undefined}>Community</a>
         </div>
       </header>
 
-      <form method="get" action="/web/master-library" class="search-row">
-        <input type="hidden" name="audience" value={audience} />
-        <input type="hidden" name="category" value={selectedCategory} />
-        <input type="hidden" name="tag" value={selectedTag} />
-
-        <input type="search" name="q" value={query} placeholder="Search catalog..." />
-        <select name="sort">
-          <option value="updated" selected={sort === 'updated'}>Most recent</option>
-          <option value="featured" selected={sort === 'featured'}>Featured first</option>
-          <option value="title" selected={sort === 'title'}>A-Z</option>
-        </select>
-        <button type="submit" class="button">Apply</button>
-      </form>
-
-      <div class="results-strip">
-        <p><strong>{sortedResources.length}</strong> results</p>
-        {(selectedCategory || selectedTag || query) && (
-          <a href={`/web/master-library?audience=${audience}`}>Clear all</a>
-        )}
+      <div class="results-head">
+        <p><strong>{sortedResources.length}</strong> resources</p>
+        {activeFilters.length > 0 && <a href={clearFiltersHref}>Clear active filters</a>}
       </div>
 
-      {featuredResources.length > 0 && (
-        <section class="featured-grid">
-          {featuredResources.map((resource) => (
-            <article class="featured-card">
-              <h2>
-                {resource.data.url ? (
-                  <a href={resource.data.url} target="_blank" rel="noopener noreferrer">{resource.data.title}</a>
-                ) : (
-                  resource.data.title
-                )}
-              </h2>
-              <p>{resource.data.description}</p>
-              <div class="mini-meta">
-                <span>Last updated: {formatDate(resource.data.publishedDate)}</span>
-                <span>{resource.data.category}</span>
-              </div>
-            </article>
+      {activeFilters.length > 0 && (
+        <div class="active-filters" aria-label="Active filters">
+          {activeFilters.map((item) => (
+            <span class="chip">{item}</span>
           ))}
+        </div>
+      )}
+
+      {featuredResources.length > 0 && (
+        <section class="featured">
+          <h2>Featured</h2>
+          <div class="featured-grid">
+            {featuredResources.map((resource) => (
+              <article class="featured-card">
+                <h3>
+                  {resource.data.url ? (
+                    <a href={resource.data.url} target="_blank" rel="noopener noreferrer">{resource.data.title}</a>
+                  ) : (
+                    resource.data.title
+                  )}
+                </h3>
+                <p>{resource.data.description}</p>
+                <p class="meta-line">Updated {formatDate(resource.data.publishedDate)}</p>
+              </article>
+            ))}
+          </div>
         </section>
       )}
 
-      <section class="result-list">
+      <section class="results">
+        <h2>All Resources</h2>
         {listResources.length === 0 ? (
-          <article class="result-card">
-            <p>No results match your current filters.</p>
-          </article>
+          <article class="result-card empty"><p>No resources match your current filter combination.</p></article>
         ) : (
           listResources.map((resource) => {
             const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
@@ -215,13 +233,12 @@ function formatDate(date: Date | undefined): string {
                       <span class="chip">{theme}</span>
                     ))}
                     {audience === 'teacher' && resource.data.pedagogicalTags.slice(0, 2).map((tag) => (
-                      <span class="chip chip-alt">{tag}</span>
+                      <span class="chip chip-accent">{tag}</span>
                     ))}
                   </div>
                 </div>
-
-                <aside class="result-meta">
-                  <p><strong>Last updated</strong></p>
+                <aside class="result-side">
+                  <p><strong>Updated</strong></p>
                   <p>{formatDate(resource.data.publishedDate)}</p>
                   <p><strong>Difficulty</strong></p>
                   <p>{resource.data.difficulty ?? 'Not specified'}</p>
@@ -235,119 +252,117 @@ function formatDate(date: Date | undefined): string {
   </section>
 
   <style>
-    .catalog-shell {
+    .library-page {
       display: grid;
-      grid-template-columns: 1fr;
       gap: var(--space-6);
+      grid-template-columns: 1fr;
     }
 
     @media (min-width: 1024px) {
-      .catalog-shell {
-        grid-template-columns: minmax(220px, 260px) 1fr;
+      .library-page {
+        grid-template-columns: minmax(260px, 300px) 1fr;
         align-items: start;
       }
     }
 
-    .filters-panel {
+    .sidebar {
+      position: sticky;
+      top: 86px;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-lg);
-      padding: var(--space-5);
       background: var(--color-surface);
-      position: sticky;
-      top: 88px;
+      padding: var(--space-5);
+      display: grid;
+      gap: var(--space-5);
     }
 
-    .filters-panel h2 {
+    .sidebar h2 {
+      margin: 0;
       font-size: var(--font-size-xl);
-      margin-bottom: var(--space-4);
     }
 
-    .filter-block {
-      border-top: 1px solid var(--color-border);
-      padding-top: var(--space-4);
-      margin-top: var(--space-4);
+    .filters-form {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .filters-form label {
       display: grid;
       gap: var(--space-2);
     }
 
-    .filter-block h3 {
-      font-size: var(--font-size-base);
-      margin: 0;
+    .filters-form span {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
     }
 
-    .filter-header {
+    .filters-form input,
+    .filters-form select {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    .filter-actions {
       display: flex;
-      justify-content: space-between;
       align-items: center;
       gap: var(--space-3);
     }
 
-    .filter-header a {
+    .filter-actions .button {
+      padding: var(--space-2) var(--space-4);
+    }
+
+    .reset-link {
+      color: var(--color-text-muted);
       font-size: var(--font-size-sm);
     }
 
-    .bullet-list {
+    .type-panel {
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--space-4);
+    }
+
+    .type-panel h3 {
+      margin: 0 0 var(--space-3);
+      font-size: var(--font-size-base);
+    }
+
+    .type-panel ul {
       list-style: none;
       margin: 0;
       padding: 0;
       display: grid;
       gap: var(--space-2);
+    }
+
+    .type-panel li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
     }
 
-    .bullet-list li {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .dot {
-      width: 0.8rem;
-      height: 0.8rem;
-      border-radius: 50%;
-      border: 1px solid var(--color-border);
-      background: var(--color-background);
-    }
-
-    .radio-option {
-      display: flex;
-      gap: var(--space-2);
-      align-items: flex-start;
-      font-size: var(--font-size-sm);
-      color: var(--color-text);
-      cursor: pointer;
-    }
-
-    .radio-option input {
-      margin-top: 0.2rem;
-    }
-
-    .filter-block select {
-      width: 100%;
-      padding: var(--space-2) var(--space-3);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      background: var(--color-background);
-      color: var(--color-text);
-    }
-
-    .catalog-main {
+    .content {
       display: grid;
       gap: var(--space-5);
     }
 
-    .catalog-header {
+    .content-header {
       display: grid;
-      gap: var(--space-4);
+      gap: var(--space-3);
     }
 
-    .catalog-header h1 {
+    .content-header h1 {
       margin-bottom: var(--space-2);
-      font-size: clamp(var(--font-size-2xl), 2.3vw, var(--font-size-4xl));
+      font-size: clamp(var(--font-size-2xl), 2.1vw, var(--font-size-4xl));
     }
 
-    .catalog-header p {
+    .content-header p {
       margin: 0;
       color: var(--color-text-muted);
     }
@@ -356,12 +371,6 @@ function formatDate(date: Date | undefined): string {
       display: flex;
       flex-wrap: wrap;
       gap: var(--space-2);
-    }
-
-    .audience-switch a.active {
-      background: var(--color-primary);
-      color: white;
-      border-color: var(--color-primary);
     }
 
     .audience-switch a {
@@ -373,48 +382,45 @@ function formatDate(date: Date | undefined): string {
       text-decoration: none;
     }
 
-    .search-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-3);
+    .audience-switch a.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
     }
 
-    @media (min-width: 900px) {
-      .search-row {
-        grid-template-columns: 1fr 180px auto;
-      }
-    }
-
-    .search-row input,
-    .search-row select {
-      width: 100%;
-      border: 1px solid var(--color-border);
-      border-radius: 999px;
-      padding: var(--space-3) var(--space-4);
-      background: var(--color-background);
-      color: var(--color-text);
-    }
-
-    .search-row select {
-      border-radius: var(--radius-md);
-    }
-
-    .search-row .button {
-      padding-inline: var(--space-5);
-    }
-
-    .results-strip {
+    .results-head {
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: var(--space-3);
-      align-items: center;
-      font-size: var(--font-size-sm);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-3) 0;
       color: var(--color-text-muted);
-      padding: var(--space-2) 0;
+      font-size: var(--font-size-sm);
     }
 
-    .results-strip p {
+    .results-head p {
       margin: 0;
+    }
+
+    .active-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: calc(var(--space-3) * -1);
+    }
+
+    .featured,
+    .results {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .featured h2,
+    .results h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
     }
 
     .featured-grid {
@@ -429,17 +435,22 @@ function formatDate(date: Date | undefined): string {
       }
     }
 
-    .featured-card {
+    .featured-card,
+    .result-card {
       border: 1px solid var(--color-border);
-      background: var(--color-surface);
       border-radius: var(--radius-lg);
-      padding: var(--space-5);
+      background: var(--color-surface);
       box-shadow: var(--shadow-sm);
+    }
+
+    .featured-card {
+      padding: var(--space-5);
       display: grid;
       gap: var(--space-3);
     }
 
-    .featured-card h2 {
+    .featured-card h3,
+    .result-main h3 {
       margin: 0;
       font-size: var(--font-size-xl);
     }
@@ -448,23 +459,12 @@ function formatDate(date: Date | undefined): string {
       margin: 0;
     }
 
-    .mini-meta {
-      display: grid;
-      gap: var(--space-1);
-      font-size: var(--font-size-sm);
+    .meta-line {
       color: var(--color-text-muted);
-    }
-
-    .result-list {
-      display: grid;
-      gap: var(--space-4);
+      font-size: var(--font-size-sm);
     }
 
     .result-card {
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      background: var(--color-surface);
-      box-shadow: var(--shadow-sm);
       display: grid;
       grid-template-columns: 1fr;
     }
@@ -481,18 +481,14 @@ function formatDate(date: Date | undefined): string {
       gap: var(--space-3);
     }
 
-    .result-main h3 {
-      margin: 0;
-      font-size: var(--font-size-2xl);
-    }
-
     .result-main p {
       margin: 0;
+      color: var(--color-text-muted);
     }
 
     .chips {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
+      display: flex;
+      flex-wrap: wrap;
       gap: var(--space-2);
     }
 
@@ -505,15 +501,15 @@ function formatDate(date: Date | undefined): string {
       border: 1px solid var(--color-border);
       font-size: var(--font-size-xs);
       color: var(--color-text-muted);
-      background: var(--color-background);
+      background: color-mix(in srgb, var(--color-background) 92%, var(--color-primary) 8%);
     }
 
-    .chip-alt {
+    .chip-accent {
       border-color: var(--color-primary);
       color: var(--color-primary);
     }
 
-    .result-meta {
+    .result-side {
       border-top: 1px solid var(--color-border);
       padding: var(--space-5);
       font-size: var(--font-size-sm);
@@ -522,14 +518,23 @@ function formatDate(date: Date | undefined): string {
     }
 
     @media (min-width: 900px) {
-      .result-meta {
+      .result-side {
         border-top: none;
         border-left: 1px solid var(--color-border);
       }
     }
 
-    .result-meta p {
+    .result-side p {
       margin: 0 0 var(--space-2);
+    }
+
+    .result-card.empty {
+      padding: var(--space-5);
+    }
+
+    .result-card.empty p {
+      margin: 0;
+      color: var(--color-text-muted);
     }
   </style>
 </Layout>
