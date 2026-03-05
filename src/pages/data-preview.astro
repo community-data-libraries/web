@@ -7,39 +7,94 @@ const datasets = all.filter((entry) => entry.data.category === 'dataset');
 ---
 
 <Layout title="Data Preview" description="Preview of dataset entries from the master library">
-  <section>
-    <h1 class="text-4xl font-bold mb-4">Data Preview</h1>
-    <p class="text-muted mb-6">Listing datasets from the master library. Built with Tailwind + Flowbite styles.</p>
+  <section class="preview-shell">
+    <h1>Data Preview</h1>
+    <p class="intro">Listing datasets from the master library with native project blocks.</p>
 
     {datasets.length === 0 ? (
-      <div class="p-4 bg-yellow-50 border border-yellow-200 rounded">
-        <p class="text-yellow-800">No datasets found.</p>
+      <div class="empty-state">
+        <p>No datasets found.</p>
       </div>
     ) : (
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="preview-grid">
         {datasets.map((item) => (
-          <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-            <h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{item.data.title}</h2>
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{item.data.description}</p>
+          <article class="preview-card">
+            <h2>{item.data.title}</h2>
+            <p>{item.data.description}</p>
             {item.data.tags && item.data.tags.length > 0 && (
-              <p class="text-sm text-gray-500 mb-3">Tags: {item.data.tags.join(', ')}</p>
+              <p class="meta">Tags: {item.data.tags.join(', ')}</p>
             )}
             {item.data.url && (
-              <a
-                href={item.data.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
-                Visit
-                <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
-                </svg>
-              </a>
+              <a href={item.data.url} target="_blank" rel="noopener noreferrer" class="button">Visit</a>
             )}
-          </div>
+          </article>
         ))}
       </div>
     )}
   </section>
+
+  <style>
+    .preview-shell {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .intro {
+      color: var(--color-text-muted);
+      max-width: 65ch;
+    }
+
+    .empty-state {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+
+    .empty-state p {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 768px) {
+      .preview-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .preview-card {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+      display: grid;
+      gap: var(--space-4);
+      align-content: start;
+    }
+
+    .preview-card h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+    }
+
+    .preview-card p {
+      margin: 0;
+    }
+
+    .meta {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .preview-card .button {
+      justify-self: start;
+    }
+  </style>
 </Layout>

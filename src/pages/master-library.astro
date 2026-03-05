@@ -1,58 +1,535 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { audienceLabel, canAudienceAccess, type AudienceRole } from '@lib/data/libraryAccess';
 
 const resources = await getCollection('master-library');
-const categories = ['dataset', 'tool', 'guide', 'paper'] as const;
+const rawAudience = Astro.url.searchParams.get('audience');
+const audience: AudienceRole =
+  rawAudience === 'teacher' || rawAudience === 'student' || rawAudience === 'community'
+    ? rawAudience
+    : 'community';
+
+const visibleResources = resources.filter((resource) => canAudienceAccess(resource, audience));
+
+const selectedCategory = (Astro.url.searchParams.get('category') ?? '').trim();
+const selectedTag = (Astro.url.searchParams.get('tag') ?? '').trim();
+const query = (Astro.url.searchParams.get('q') ?? '').trim();
+const sort = Astro.url.searchParams.get('sort') ?? 'updated';
+
+const searchQuery = query.toLowerCase();
+
+const allThemes = Array.from(
+  new Set(
+    visibleResources.flatMap((resource) =>
+      resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags,
+    ),
+  ),
+).sort((left, right) => left.localeCompare(right));
+
+const allTags = Array.from(new Set(visibleResources.flatMap((resource) => resource.data.tags))).sort((left, right) =>
+  left.localeCompare(right),
+);
+
+const filteredResources = visibleResources.filter((resource) => {
+  const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
+  const matchesCategory = selectedCategory ? themes.includes(selectedCategory) : true;
+  const matchesTag = selectedTag ? resource.data.tags.includes(selectedTag) : true;
+  const haystack = [resource.data.title, resource.data.description, ...themes, ...resource.data.tags]
+    .join(' ')
+    .toLowerCase();
+  const matchesSearch = searchQuery ? haystack.includes(searchQuery) : true;
+  return matchesCategory && matchesTag && matchesSearch;
+});
+
+const sortedResources = [...filteredResources].sort((left, right) => {
+  if (sort === 'title') {
+    return left.data.title.localeCompare(right.data.title);
+  }
+
+  if (sort === 'featured') {
+    return Number(right.data.featured) - Number(left.data.featured);
+  }
+
+  const leftTime = left.data.publishedDate ? new Date(left.data.publishedDate).getTime() : 0;
+  const rightTime = right.data.publishedDate ? new Date(right.data.publishedDate).getTime() : 0;
+  return rightTime - leftTime;
+});
+
+const featuredResources = sortedResources.filter((resource) => resource.data.featured).slice(0, 2);
+const listResources = sortedResources.filter(
+  (resource) => !featuredResources.some((featured) => featured.id === resource.id),
+);
+
+function formatDate(date: Date | undefined): string {
+  if (!date) return 'Not specified';
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
 ---
 
 <Layout title="Master Library" description="All curated resources in the CDL master library">
-  <section>
-    <h1>Master Library</h1>
-    <p>Browse all curated entries. Use categories to scan quickly.</p>
+  <section class="catalog-shell">
+    <aside class="filters-panel">
+      <h2>Filters</h2>
 
-    {categories.map((cat) => (
-      <section>
-        <h2 style="margin-top: var(--space-8)">{cat[0].toUpperCase() + cat.slice(1)}</h2>
-        <ul class="card-grid">
-          {resources
-            .filter((r) => r.data.category === cat)
-            .map((item) => (
-              <li class="card">
-                <h3>{item.data.title}</h3>
-                <p>{item.data.description}</p>
-                {item.data.tags && item.data.tags.length > 0 && (
-                  <p class="tags">Tags: {item.data.tags.join(', ')}</p>
-                )}
-                {item.data.url && (
-                  <p><a class="button" href={item.data.url} target="_blank" rel="noopener noreferrer">Visit</a></p>
-                )}
-              </li>
-            ))}
+      <section class="filter-block">
+        <h3>View Types</h3>
+        <ul class="bullet-list">
+          <li><span class="dot"></span>Datasets</li>
+          <li><span class="dot"></span>Guides</li>
+          <li><span class="dot"></span>Tools</li>
+          <li><span class="dot"></span>Papers</li>
         </ul>
       </section>
-    ))}
+
+      <form method="get" action="/web/master-library" class="filter-block">
+        <input type="hidden" name="audience" value={audience} />
+        <input type="hidden" name="q" value={query} />
+        <input type="hidden" name="sort" value={sort} />
+        <input type="hidden" name="tag" value={selectedTag} />
+
+        <div class="filter-header">
+          <h3>Category</h3>
+          <a href={`/web/master-library?audience=${audience}&q=${encodeURIComponent(query)}&sort=${sort}&tag=${encodeURIComponent(selectedTag)}`}>Clear</a>
+        </div>
+
+        <label class="radio-option">
+          <input type="radio" name="category" value="" checked={!selectedCategory} onchange="this.form.submit()" />
+          <span>All themes</span>
+        </label>
+        {allThemes.map((theme) => (
+          <label class="radio-option">
+            <input
+              type="radio"
+              name="category"
+              value={theme}
+              checked={selectedCategory === theme}
+              onchange="this.form.submit()"
+            />
+            <span>{theme}</span>
+          </label>
+        ))}
+      </form>
+
+      <form method="get" action="/web/master-library" class="filter-block">
+        <input type="hidden" name="audience" value={audience} />
+        <input type="hidden" name="q" value={query} />
+        <input type="hidden" name="sort" value={sort} />
+        <input type="hidden" name="category" value={selectedCategory} />
+
+        <h3>Tags</h3>
+        <select name="tag" onchange="this.form.submit()">
+          <option value="">Choose tag</option>
+          {allTags.map((tag) => (
+            <option value={tag} selected={selectedTag === tag}>{tag}</option>
+          ))}
+        </select>
+      </form>
+    </aside>
+
+    <div class="catalog-main">
+      <header class="catalog-header">
+        <div>
+          <h1>Master Library Catalog</h1>
+          <p>
+            Showing <strong>{audienceLabel(audience)}</strong> view.
+            {audience !== 'teacher' && ' Sensitive datasets are excluded.'}
+          </p>
+        </div>
+
+        <div class="audience-switch">
+          <a href="/web/master-library?audience=teacher" class={audience === 'teacher' ? 'active' : undefined}>Teacher</a>
+          <a href="/web/master-library?audience=student" class={audience === 'student' ? 'active' : undefined}>Student</a>
+          <a href="/web/master-library?audience=community" class={audience === 'community' ? 'active' : undefined}>Community</a>
+        </div>
+      </header>
+
+      <form method="get" action="/web/master-library" class="search-row">
+        <input type="hidden" name="audience" value={audience} />
+        <input type="hidden" name="category" value={selectedCategory} />
+        <input type="hidden" name="tag" value={selectedTag} />
+
+        <input type="search" name="q" value={query} placeholder="Search catalog..." />
+        <select name="sort">
+          <option value="updated" selected={sort === 'updated'}>Most recent</option>
+          <option value="featured" selected={sort === 'featured'}>Featured first</option>
+          <option value="title" selected={sort === 'title'}>A-Z</option>
+        </select>
+        <button type="submit" class="button">Apply</button>
+      </form>
+
+      <div class="results-strip">
+        <p><strong>{sortedResources.length}</strong> results</p>
+        {(selectedCategory || selectedTag || query) && (
+          <a href={`/web/master-library?audience=${audience}`}>Clear all</a>
+        )}
+      </div>
+
+      {featuredResources.length > 0 && (
+        <section class="featured-grid">
+          {featuredResources.map((resource) => (
+            <article class="featured-card">
+              <h2>
+                {resource.data.url ? (
+                  <a href={resource.data.url} target="_blank" rel="noopener noreferrer">{resource.data.title}</a>
+                ) : (
+                  resource.data.title
+                )}
+              </h2>
+              <p>{resource.data.description}</p>
+              <div class="mini-meta">
+                <span>Last updated: {formatDate(resource.data.publishedDate)}</span>
+                <span>{resource.data.category}</span>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+
+      <section class="result-list">
+        {listResources.length === 0 ? (
+          <article class="result-card">
+            <p>No results match your current filters.</p>
+          </article>
+        ) : (
+          listResources.map((resource) => {
+            const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
+            return (
+              <article class="result-card">
+                <div class="result-main">
+                  <h3>
+                    {resource.data.url ? (
+                      <a href={resource.data.url} target="_blank" rel="noopener noreferrer">{resource.data.title}</a>
+                    ) : (
+                      resource.data.title
+                    )}
+                  </h3>
+                  <p>{resource.data.description}</p>
+                  <div class="chips">
+                    <span class="chip">{resource.data.category}</span>
+                    {themes.slice(0, 3).map((theme) => (
+                      <span class="chip">{theme}</span>
+                    ))}
+                    {audience === 'teacher' && resource.data.pedagogicalTags.slice(0, 2).map((tag) => (
+                      <span class="chip chip-alt">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <aside class="result-meta">
+                  <p><strong>Last updated</strong></p>
+                  <p>{formatDate(resource.data.publishedDate)}</p>
+                  <p><strong>Difficulty</strong></p>
+                  <p>{resource.data.difficulty ?? 'Not specified'}</p>
+                </aside>
+              </article>
+            );
+          })
+        )}
+      </section>
+    </div>
   </section>
 
   <style>
-    .card-grid {
-      list-style: none;
-      padding: 0;
+    .catalog-shell {
       display: grid;
       grid-template-columns: 1fr;
       gap: var(--space-6);
     }
 
-    @media (min-width: 768px) { .card-grid { grid-template-columns: 1fr 1fr; } }
-
-    .card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      padding: var(--space-6);
-      box-shadow: var(--shadow-sm);
+    @media (min-width: 1024px) {
+      .catalog-shell {
+        grid-template-columns: minmax(220px, 260px) 1fr;
+        align-items: start;
+      }
     }
 
-    .tags { color: var(--color-text-muted); }
+    .filters-panel {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      background: var(--color-surface);
+      position: sticky;
+      top: 88px;
+    }
+
+    .filters-panel h2 {
+      font-size: var(--font-size-xl);
+      margin-bottom: var(--space-4);
+    }
+
+    .filter-block {
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--space-4);
+      margin-top: var(--space-4);
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .filter-block h3 {
+      font-size: var(--font-size-base);
+      margin: 0;
+    }
+
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .filter-header a {
+      font-size: var(--font-size-sm);
+    }
+
+    .bullet-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .bullet-list li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .dot {
+      width: 0.8rem;
+      height: 0.8rem;
+      border-radius: 50%;
+      border: 1px solid var(--color-border);
+      background: var(--color-background);
+    }
+
+    .radio-option {
+      display: flex;
+      gap: var(--space-2);
+      align-items: flex-start;
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
+      cursor: pointer;
+    }
+
+    .radio-option input {
+      margin-top: 0.2rem;
+    }
+
+    .filter-block select {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    .catalog-main {
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    .catalog-header {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .catalog-header h1 {
+      margin-bottom: var(--space-2);
+      font-size: clamp(var(--font-size-2xl), 2.3vw, var(--font-size-4xl));
+    }
+
+    .catalog-header p {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    .audience-switch {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .audience-switch a.active {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+
+    .audience-switch a {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
+      text-decoration: none;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+
+    @media (min-width: 900px) {
+      .search-row {
+        grid-template-columns: 1fr 180px auto;
+      }
+    }
+
+    .search-row input,
+    .search-row select {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-background);
+      color: var(--color-text);
+    }
+
+    .search-row select {
+      border-radius: var(--radius-md);
+    }
+
+    .search-row .button {
+      padding-inline: var(--space-5);
+    }
+
+    .results-strip {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: center;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      padding: var(--space-2) 0;
+    }
+
+    .results-strip p {
+      margin: 0;
+    }
+
+    .featured-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    @media (min-width: 900px) {
+      .featured-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .featured-card {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .featured-card h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+    }
+
+    .featured-card p {
+      margin: 0;
+    }
+
+    .mini-meta {
+      display: grid;
+      gap: var(--space-1);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+    }
+
+    .result-list {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .result-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 900px) {
+      .result-card {
+        grid-template-columns: minmax(0, 1fr) 220px;
+      }
+    }
+
+    .result-main {
+      padding: var(--space-5);
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .result-main h3 {
+      margin: 0;
+      font-size: var(--font-size-2xl);
+    }
+
+    .result-main p {
+      margin: 0;
+    }
+
+    .chips {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
+      gap: var(--space-2);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-1) var(--space-2);
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
+      background: var(--color-background);
+    }
+
+    .chip-alt {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .result-meta {
+      border-top: 1px solid var(--color-border);
+      padding: var(--space-5);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      background: color-mix(in srgb, var(--color-surface) 75%, var(--color-background) 25%);
+    }
+
+    @media (min-width: 900px) {
+      .result-meta {
+        border-top: none;
+        border-left: 1px solid var(--color-border);
+      }
+    }
+
+    .result-meta p {
+      margin: 0 0 var(--space-2);
+    }
   </style>
 </Layout>

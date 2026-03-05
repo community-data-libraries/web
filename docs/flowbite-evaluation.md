@@ -1,5 +1,7 @@
 # Flowbite Evaluation & Data Preview Page
 
+Status (March 2026): Flowbite is intentionally removed from this project. The site now uses native theme tokens and custom blocks.
+
 Flowbite (Tailwind component library) can improve UI patterns, but it requires Tailwind CSS.
 
 ## Integration Steps (Plan)

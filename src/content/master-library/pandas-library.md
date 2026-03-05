@@ -4,7 +4,11 @@ description: 'A powerful, open-source data analysis and manipulation tool built 
 author: 'Wes McKinney and contributors'
 publishedDate: 2024-01-10
 tags: ['python', 'data-analysis', 'data-manipulation', 'dataframes', 'open-source']
+dataThemes: ['data cleaning', 'data analysis', 'python workflows']
+pedagogicalTags: ['coding-lab', 'guided-practice', 'skills-progression']
 category: 'tool'
+audienceAccess: { teacher: true, student: true, community: true }
+sensitive: false
 url: 'https://pandas.pydata.org/'
 fileUrl: 'https://github.com/pandas-dev/pandas'
 featured: true

@@ -1,20 +1,65 @@
 ---
 import Layout from '@layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { extractThemes } from '@lib/data/libraryAccess';
+
+const resources = await getCollection('master-library');
+const dataThemes = extractThemes(resources, 'community');
 ---
 
 <Layout
   title="Community Member"
   description="Community-focused pathways for finding and sharing locally relevant data resources."
 >
-  <section>
+  <section class="role-shell">
     <h1>Community Member</h1>
     <p>
       Find and share resources that reflect local context, community priorities, and practical
       knowledge from the field.
     </p>
-    <p>
-      Browse shared materials in <a href="/web/community-library">Community Library</a> and
-      contribute new entries through the project submission workflow.
+
+    <article class="panel">
+      <h2>Data Themes</h2>
+      <ul>
+        {dataThemes.map((theme) => (
+          <li>{theme}</li>
+        ))}
+      </ul>
+    </article>
+
+    <p class="role-link">
+      Open <a href="/web/master-library?audience=community">Master Library</a> with community visibility.
     </p>
   </section>
+
+  <style>
+    .role-shell {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .panel {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+
+    .panel h2 {
+      margin-bottom: var(--space-3);
+      font-size: var(--font-size-xl);
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .role-link {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+  </style>
 </Layout>

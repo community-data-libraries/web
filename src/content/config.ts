@@ -19,7 +19,21 @@ const masterLibraryCollection = defineCollection({
 
     // Categorization
     tags: z.array(z.string()).default([]),
+    dataThemes: z.array(z.string()).default([]),
+    pedagogicalTags: z.array(z.string()).default([]),
     category: z.enum(['dataset', 'tool', 'guide', 'paper']),
+    audienceAccess: z
+      .object({
+        teacher: z.boolean().default(true),
+        student: z.boolean().default(true),
+        community: z.boolean().default(true),
+      })
+      .default({
+        teacher: true,
+        student: true,
+        community: true,
+      }),
+    sensitive: z.boolean().default(false),
 
     // Resource links
     url: z.string().url().optional(),

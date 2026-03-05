@@ -27,5 +27,5 @@ Contribution guidelines are in [data/geo/README.md](data/geo/README.md).
 - Geo data branching guidance: [docs/geo-branching.md](docs/geo-branching.md)
 - Community library structure: [docs/community-library-structure.md](docs/community-library-structure.md)
 - Datasheet requirements: [docs/datasheet-requirements.md](docs/datasheet-requirements.md)
-- Flowbite evaluation: [docs/flowbite-evaluation.md](docs/flowbite-evaluation.md)
+- DecapCMS implementation: [docs/decapcms-implementation.md](docs/decapcms-implementation.md)
 - Aadya checklist: [docs/checklist-aadya.md](docs/checklist-aadya.md)

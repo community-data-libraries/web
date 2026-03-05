@@ -1,20 +1,89 @@
 ---
 import Layout from '@layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { extractPedagogicalTags, extractThemes } from '@lib/data/libraryAccess';
+
+const resources = await getCollection('master-library');
+const dataThemes = extractThemes(resources, 'teacher');
+const pedagogicalTags = extractPedagogicalTags(resources);
 ---
 
 <Layout
   title="Teacher"
   description="Resources curated for teachers using data in classrooms and learning spaces."
 >
-  <section>
+  <section class="role-shell">
     <h1>Teacher</h1>
     <p>
       Explore classroom-ready datasets, guides, and practical resources designed to support data
       literacy and project-based learning.
     </p>
-    <p>
-      Start from the core collection in <a href="/web/master-library">Master Library</a> or browse
-      local contributions in <a href="/web/community-library">Community Library</a>.
+
+    <div class="panel-grid">
+      <article class="panel">
+        <h2>Data Themes</h2>
+        <ul>
+          {dataThemes.map((theme) => (
+            <li>{theme}</li>
+          ))}
+        </ul>
+      </article>
+
+      <article class="panel">
+        <h2>Pedagogical Tags</h2>
+        <ul>
+          {pedagogicalTags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      </article>
+    </div>
+
+    <p class="role-link">
+      Open <a href="/web/master-library?audience=teacher">Master Library</a> with teacher visibility.
     </p>
   </section>
+
+  <style>
+    .role-shell {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 900px) {
+      .panel-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .panel {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+
+    .panel h2 {
+      margin-bottom: var(--space-3);
+      font-size: var(--font-size-xl);
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 1.25rem;
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .role-link {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+  </style>
 </Layout>

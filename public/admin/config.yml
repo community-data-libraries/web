@@ -1,0 +1,53 @@
+backend:
+  name: git-gateway
+  branch: main
+
+local_backend: true
+
+media_folder: public/uploads
+public_folder: /web/uploads
+
+collections:
+  - name: master-library
+    label: Master Library
+    folder: src/content/master-library
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Description, name: description, widget: text }
+      - { label: Author, name: author, widget: string, required: false }
+      - { label: Published Date, name: publishedDate, widget: datetime, required: false }
+      - {
+          label: Category,
+          name: category,
+          widget: select,
+          options: [dataset, tool, guide, paper],
+        }
+      - { label: Tags, name: tags, widget: list, required: false }
+      - { label: Data Themes, name: dataThemes, widget: list, required: false }
+      - { label: Pedagogical Tags, name: pedagogicalTags, widget: list, required: false }
+      - {
+          label: Audience Access,
+          name: audienceAccess,
+          widget: object,
+          fields:
+            - { label: Teacher, name: teacher, widget: boolean, default: true }
+            - { label: Student, name: student, widget: boolean, default: true }
+            - { label: Community, name: community, widget: boolean, default: true },
+        }
+      - { label: Sensitive, name: sensitive, widget: boolean, default: false }
+      - { label: URL, name: url, widget: string, required: false }
+      - { label: File URL, name: fileUrl, widget: string, required: false }
+      - {
+          label: Difficulty,
+          name: difficulty,
+          widget: select,
+          options: [beginner, intermediate, advanced],
+          required: false,
+        }
+      - { label: Language, name: language, widget: string, required: false }
+      - { label: Featured, name: featured, widget: boolean, default: false }
+      - { label: Body, name: body, widget: markdown }
