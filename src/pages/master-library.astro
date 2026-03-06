@@ -177,7 +177,20 @@ function formatDate(date: Date | undefined): string {
 
       <div class="results-head">
         <p><strong>{sortedResources.length}</strong> resources</p>
-        {activeFilters.length > 0 && <a href={clearFiltersHref}>Clear active filters</a>}
+        <div class="results-head-right">
+          {activeFilters.length > 0 && <a href={clearFiltersHref}>Clear filters</a>}
+          <div class="view-toggle" role="group" aria-label="View mode">
+            <button class="view-btn active" data-view="list" title="List view" aria-pressed="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+            <button class="view-btn" data-view="grid" title="Grid view" aria-pressed="false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </button>
+            <button class="view-btn" data-view="table" title="Table view" aria-pressed="false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       {activeFilters.length > 0 && (
@@ -209,47 +222,130 @@ function formatDate(date: Date | undefined): string {
         </section>
       )}
 
-      <section class="results">
+      <section class="results" id="results-section" data-view="list">
         <h2>All Resources</h2>
+
         {listResources.length === 0 ? (
           <article class="result-card empty"><p>No resources match your current filter combination.</p></article>
         ) : (
-          listResources.map((resource) => {
-            const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
-            return (
-              <article class="result-card">
-                <div class="result-main">
-                  <h3>
-                    {resource.data.url ? (
-                      <a href={resource.data.url} target="_blank" rel="noopener noreferrer">{resource.data.title}</a>
-                    ) : (
-                      resource.data.title
-                    )}
-                  </h3>
-                  <p>{resource.data.description}</p>
-                  <div class="chips">
-                    <span class="chip">{resource.data.category}</span>
-                    {themes.slice(0, 3).map((theme) => (
-                      <span class="chip">{theme}</span>
-                    ))}
-                    {audience === 'teacher' && resource.data.pedagogicalTags.slice(0, 2).map((tag) => (
-                      <span class="chip chip-accent">{tag}</span>
-                    ))}
-                  </div>
-                </div>
-                <aside class="result-side">
-                  <p><strong>Updated</strong></p>
-                  <p>{formatDate(resource.data.publishedDate)}</p>
-                  <p><strong>Difficulty</strong></p>
-                  <p>{resource.data.difficulty ?? 'Not specified'}</p>
-                </aside>
-              </article>
-            );
-          })
+          <>
+            {/* Card / Grid view */}
+            <div class="cards-view">
+              {listResources.map((resource) => {
+                const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
+                return (
+                  <article class="result-card">
+                    <div class="result-main">
+                      <h3>
+                        {resource.data.url ? (
+                          <a href={resource.data.url} target="_blank" rel="noopener noreferrer">{resource.data.title}</a>
+                        ) : (
+                          resource.data.title
+                        )}
+                      </h3>
+                      <p>{resource.data.description}</p>
+                      <div class="chips">
+                        <span class="chip">{resource.data.category}</span>
+                        {themes.slice(0, 3).map((theme) => (
+                          <span class="chip">{theme}</span>
+                        ))}
+                        {audience === 'teacher' && resource.data.pedagogicalTags.slice(0, 2).map((tag) => (
+                          <span class="chip chip-accent">{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <aside class="result-side">
+                      <p><strong>Updated</strong></p>
+                      <p>{formatDate(resource.data.publishedDate)}</p>
+                      <p><strong>Difficulty</strong></p>
+                      <p>{resource.data.difficulty ?? 'Not specified'}</p>
+                    </aside>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Table view */}
+            <div class="table-view">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Themes</th>
+                    {audience === 'teacher' && <th>Pedagogical Tags</th>}
+                    <th>Difficulty</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {listResources.map((resource) => {
+                    const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
+                    return (
+                      <tr>
+                        <td class="td-title">
+                          {resource.data.url ? (
+                            <a href={resource.data.url} target="_blank" rel="noopener noreferrer">{resource.data.title}</a>
+                          ) : (
+                            resource.data.title
+                          )}
+                        </td>
+                        <td><span class="chip">{resource.data.category}</span></td>
+                        <td>
+                          <div class="chips">
+                            {themes.slice(0, 2).map((theme) => (
+                              <span class="chip">{theme}</span>
+                            ))}
+                          </div>
+                        </td>
+                        {audience === 'teacher' && (
+                          <td>
+                            <div class="chips">
+                              {resource.data.pedagogicalTags.slice(0, 2).map((tag) => (
+                                <span class="chip chip-accent">{tag}</span>
+                              ))}
+                            </div>
+                          </td>
+                        )}
+                        <td class="td-meta">{resource.data.difficulty ?? '—'}</td>
+                        <td class="td-meta">{formatDate(resource.data.publishedDate)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
     </div>
   </section>
+
+  <script>
+    const section = document.getElementById('results-section');
+    const buttons = document.querySelectorAll('.view-btn');
+
+    const saved = localStorage.getItem('ml-view') ?? 'list';
+    applyView(saved);
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const view = (btn as HTMLElement).dataset.view ?? 'list';
+        applyView(view);
+        localStorage.setItem('ml-view', view);
+      });
+    });
+
+    function applyView(view: string) {
+      if (!section) return;
+      section.dataset.view = view;
+      buttons.forEach((btn) => {
+        const isActive = (btn as HTMLElement).dataset.view === view;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', String(isActive));
+      });
+    }
+  </script>
 
   <style>
     .library-page {
@@ -469,12 +565,6 @@ function formatDate(date: Date | undefined): string {
       grid-template-columns: 1fr;
     }
 
-    @media (min-width: 900px) {
-      .result-card {
-        grid-template-columns: minmax(0, 1fr) 220px;
-      }
-    }
-
     .result-main {
       padding: var(--space-5);
       display: grid;
@@ -517,13 +607,6 @@ function formatDate(date: Date | undefined): string {
       background: color-mix(in srgb, var(--color-surface) 75%, var(--color-background) 25%);
     }
 
-    @media (min-width: 900px) {
-      .result-side {
-        border-top: none;
-        border-left: 1px solid var(--color-border);
-      }
-    }
-
     .result-side p {
       margin: 0 0 var(--space-2);
     }
@@ -535,6 +618,173 @@ function formatDate(date: Date | undefined): string {
     .result-card.empty p {
       margin: 0;
       color: var(--color-text-muted);
+    }
+
+    /* Results head right controls */
+    .results-head-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    /* View toggle buttons */
+    .view-toggle {
+      display: flex;
+      gap: var(--space-1);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 2px;
+      background: var(--color-surface);
+    }
+
+    .view-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 28px;
+      border: none;
+      border-radius: calc(var(--radius-md) - 2px);
+      background: transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+      padding: 0;
+    }
+
+    .view-btn:hover {
+      background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+      color: var(--color-primary);
+    }
+
+    .view-btn.active {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    /* Cards view (list and grid) */
+    .cards-view {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .table-view {
+      display: none;
+    }
+
+    /* List view (default) — single column cards with sidebar */
+    #results-section[data-view="list"] .cards-view {
+      display: grid;
+    }
+
+    #results-section[data-view="list"] .result-card {
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 900px) {
+      #results-section[data-view="list"] .result-card {
+        grid-template-columns: minmax(0, 1fr) 220px;
+      }
+
+      #results-section[data-view="list"] .result-side {
+        border-top: none;
+        border-left: 1px solid var(--color-border);
+      }
+    }
+
+    /* Grid view — 2-col, no sidebar */
+    #results-section[data-view="grid"] .cards-view {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    @media (min-width: 640px) {
+      #results-section[data-view="grid"] .cards-view {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    #results-section[data-view="grid"] .result-card {
+      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #results-section[data-view="grid"] .result-side {
+      display: none;
+    }
+
+    #results-section[data-view="grid"] .result-main {
+      flex: 1;
+    }
+
+    /* Table view */
+    #results-section[data-view="table"] .cards-view {
+      display: none;
+    }
+
+    #results-section[data-view="table"] .table-view {
+      display: block;
+      overflow-x: auto;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+    }
+
+    .table-view table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+    }
+
+    .table-view thead {
+      background: color-mix(in srgb, var(--color-background) 60%, var(--color-surface));
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .table-view th {
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    .table-view td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+
+    .table-view tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-view tbody tr:hover {
+      background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));
+    }
+
+    .td-title {
+      font-weight: 600;
+      color: var(--color-text);
+      min-width: 200px;
+    }
+
+    .td-title a {
+      color: var(--color-text);
+    }
+
+    .td-title a:hover {
+      color: var(--color-primary);
+    }
+
+    .td-meta {
+      color: var(--color-text-muted);
+      white-space: nowrap;
     }
   </style>
 </Layout>
