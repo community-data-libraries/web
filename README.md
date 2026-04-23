@@ -9,6 +9,18 @@ npm install
 npm run dev
 ```
 
+## Backend Starter
+
+A minimal backend is available in `backend/` and reads YAML source files from `backend/data/sources/`.
+
+Run it from the project root:
+
+```bash
+npm run backend:dev
+```
+
+Base URL: `http://localhost:4322`
+
 ## Geographic Markers
 
 - Canonical markers stored in [data/geo/markers.geojson](data/geo/markers.geojson).

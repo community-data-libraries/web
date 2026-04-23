@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "backend:dev": "node backend/server.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -36,7 +37,8 @@
     "@astrojs/react": "^4.4.2",
     "astro": "^5.17.2",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@mapbox/geojsonhint": "^3.3.0",
