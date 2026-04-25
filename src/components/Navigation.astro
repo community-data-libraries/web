@@ -11,9 +11,13 @@ const dataResourcesHref = withBasePath('/data-resources');
 const submitHref = withBasePath('/submit');
 
 const navItems = [
+  { href: homeHref, label: 'Home' },
   { href: catalogHref, label: 'Complete Catalog' },
-  { href: communityHref, label: 'Community' },
-  { href: mapHref, label: 'Map' },
+];
+
+const navItemsAfter = [
+  { href: mapHref, label: 'Interactive Map' },
+  { href: communityHref, label: 'Example Community Library', external: true },
 ];
 
 const dataResourcesItems = [
@@ -70,11 +74,25 @@ function isDataResourcesActive(path: string): boolean {
           </div>
         </details>
       </li>
+      {navItemsAfter.map((item) => (
+        <li class="nav-item">
+          <a
+            href={item.href}
+            class={`nav-link ${isActive(item.href, currentPath) ? 'active' : ''}`}
+            aria-current={isActive(item.href, currentPath) ? 'page' : undefined}
+          >
+            {item.label}
+            {item.external && (
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:3px;vertical-align:middle;opacity:0.6"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            )}
+          </a>
+        </li>
+      ))}
     </ul>
 
     <!-- CTA + hamburger -->
     <div class="nav-actions">
-      <a href={submitHref} class="nav-cta">Submit Resource</a>
+      <a href={submitHref} class="nav-cta">Create A Community Library</a>
       <button
         class="mobile-menu-button"
         aria-label="Toggle navigation menu"
@@ -116,7 +134,7 @@ function isDataResourcesActive(path: string): boolean {
         </details>
       </li>
       <li><a href={homeHref} class={`mobile-link ${isActive(homeHref, currentPath) ? 'active' : ''}`}>Home</a></li>
-      <li><a href={submitHref} class="mobile-link mobile-link-cta">Submit a Resource →</a></li>
+      <li><a href={submitHref} class="mobile-link mobile-link-cta">Create Your Community's Library →</a></li>
     </ul>
   </div>
 </nav>
@@ -157,7 +175,8 @@ function isDataResourcesActive(path: string): boolean {
   /* ── Navbar shell ─────────────────────────────── */
   .navbar {
     background: rgba(245, 248, 250, 0.92);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 2px solid rgba(31, 51, 73, 0.4);
+    box-shadow: var(--shadow-md);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -204,7 +223,7 @@ function isDataResourcesActive(path: string): boolean {
 
   .brand-name {
     font-family: var(--font-display);
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--color-text-muted);
     letter-spacing: 0.02em;
@@ -299,7 +318,8 @@ function isDataResourcesActive(path: string): boolean {
   }
 
   .nav-link {
-    display: block;
+    display: inline-flex;
+    align-items: center;
     padding: var(--space-2) var(--space-3);
     font-family: var(--font-sans);
     font-size: var(--font-size-sm);
@@ -346,7 +366,7 @@ function isDataResourcesActive(path: string): boolean {
   .nav-cta {
     display: none;
     padding: var(--space-2) var(--space-4);
-    background: var(--color-primary);
+    background: var(--color-secondary);
     color: #F8FAFC;
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
@@ -354,13 +374,13 @@ function isDataResourcesActive(path: string): boolean {
     text-decoration: none;
     transition: all 0.18s ease;
     white-space: nowrap;
-    border: 1.5px solid var(--color-primary);
+    border: 1.5px solid var(--color-secondary);
   }
 
   .nav-cta:hover {
-    background: var(--color-primary-dark);
-    border-color: var(--color-primary-dark);
-    box-shadow: var(--shadow-glow-primary);
+    background: #0F4A5E;
+    border-color: #0F4A5E;
+    box-shadow: var(--shadow-glow-secondary);
     transform: translateY(-1px);
     text-decoration: none;
     color: #F8FAFC;

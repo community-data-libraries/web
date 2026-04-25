@@ -24,21 +24,24 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
       </div>
 
       <h1 class="hero-title">
-        Data <em class="word-about">about</em> the community,<br/>
-        <em class="word-for">for</em> the community.
+        Data <em class="word-about">about</em> your community,<br/>
+        <em class="word-for">for</em> your community.
       </h1>
 
       <p class="hero-body">
         A curated catalog of datasets and resources —
-        filtered to focus on your geographic community.
+        filtered to focus on your geographic community with just a few clicks.
       </p>
 
       <div class="hero-actions">
         <a href={withBasePath('/complete-catalog')} class="btn-primary">
-          Explore the Complete Catalog
+          Explore the Full Dataset Catalog
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <a href={withBasePath('/maps')} class="btn-ghost">View Map</a>
+        <a href={withBasePath('/maps')} class="btn-ghost">
+          Preview the Data Available for Your Community
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
       </div>
 
       <!-- <div class="hero-roles" aria-label="Browse by role">
@@ -101,8 +104,9 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
         <span>Curated datasets</span>
       </div>
       <div class="badge badge-2">
-        <strong>{communityResourceCount}</strong>
-        <span>Community resources</span>
+        <span>Any</span>
+        <strong>U.S.</strong>
+        <span>Community</span>
       </div>
     </div>
   </section>
@@ -113,24 +117,14 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
   <div class="stats-strip" aria-label="Platform statistics">
     <div class="stat-item">
       <span class="stat-n">{datasetCount}</span>
-      <span class="stat-l">Datasets</span>
+      <span class="stat-l">Curated Datasets</span>
     </div>
-    <div class="stat-sep" aria-hidden="true">·</div>
+    <div class="stat-sep" aria-hidden="true"></div>
     <div class="stat-item">
       <span class="stat-n">{communityResourceCount}</span>
-      <span class="stat-l">Community Resources</span>
-    </div>
-    <div class="stat-sep" aria-hidden="true">·</div>
-    <div class="stat-item">
-      <span class="stat-n">{regionCount}</span>
-      <span class="stat-l">Regions</span>
-    </div>
-    <div class="stat-sep" aria-hidden="true">·</div>
-    <div class="stat-item">
-      <span class="stat-n">10+</span>
       <span class="stat-l">Community Libraries</span>
     </div>
-    <div class="stat-sep" aria-hidden="true">·</div>
+    <div class="stat-sep" aria-hidden="true"></div>
     <div class="stat-item">
       <span class="stat-n">100%</span>
       <span class="stat-l">Open Source</span>
@@ -143,11 +137,11 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
   <section class="how-section" aria-label="How it works">
     <header class="section-header">
       <p class="section-eyebrow">How it works</p>
-      <h2 class="section-title">Built for classrooms.<br/><span class="section-title-accent">Designed for communities.</span></h2>
+      <h2 class="section-title">Built for classrooms and communities.</h2>
     </header>
 
     <p class="how-section">
-        Follow the setup steps to <a href={withBasePath('/data-preview')}>create a library</a> for your community. No technical expertise is needed. Your community library will be created, continuously updated, and available automatically.
+        Community data libraries allows you quickly build a robust data library for your community with a few simple clicks. Simply follow the setup steps to <a href={withBasePath('/data-preview')}>create a library</a>. No technical expertise is needed. Your community library will be created, continuously updated, and available automatically.
     </p>
 
     <div class="how-grid">
@@ -218,7 +212,7 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
   ═══════════════════════════════════════════ -->
   <section class="cta-banner" aria-label="Contribute">
     <div class="cta-text">
-      <p class="cta-eyebrow">Community-Driven Catalogs</p>
+      <p class="cta-eyebrow">Community-Driven Catalog</p>
       <h2 class="cta-title">Know an open dataset containing community data?</h2>
       <p class="cta-body">Help expand the dataset catalog by sharing datasets openly available on the web. All submissions are reviewed before publication.</p>
     </div>
@@ -328,9 +322,9 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-6);
-    background: var(--color-primary);
+    background: var(--color-secondary);
     color: #F8FAFC;
-    border: 1.5px solid var(--color-primary);
+    border: 1.5px solid var(--color-secondary);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     font-weight: 600;
@@ -342,9 +336,9 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
   }
 
   .btn-primary:hover {
-    background: var(--color-primary-dark);
-    border-color: var(--color-primary-dark);
-    box-shadow: var(--shadow-glow-primary);
+    background: #0F4A5E;
+    border-color: #0F4A5E;
+    box-shadow: var(--shadow-glow-secondary);
     transform: translateY(-1px);
     text-decoration: none;
     color: #F8FAFC;
@@ -356,8 +350,9 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
   .btn-ghost {
     display: inline-flex;
     align-items: center;
+    gap: var(--space-2);
     padding: var(--space-3) var(--space-5);
-    background: transparent;
+    background: var(--color-surface-raised);
     color: var(--color-text-muted);
     border: 1.5px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -375,6 +370,9 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
     text-decoration: none;
     transform: translateY(-1px);
   }
+
+  .btn-ghost svg { transition: transform 0.18s ease; }
+  .btn-ghost:hover svg { transform: translateX(3px); }
 
   /* Role pills */
   .hero-roles {
@@ -580,20 +578,11 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
     gap: var(--space-6);
     flex-wrap: wrap;
     padding: var(--space-6) var(--space-8);
-    background: var(--color-text);
+    background: #FFFFFF;
+    border: 1.5px solid #EBF2F5;
     border-radius: var(--radius-lg);
     margin-bottom: var(--space-16);
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Decorative stripe */
-  .stats-strip::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-accent-light), var(--color-secondary-light));
+    box-shadow: var(--shadow-md);
   }
 
   .stat-item {
@@ -607,22 +596,24 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
     font-family: var(--font-display);
     font-size: var(--font-size-3xl);
     font-weight: 900;
-    color: var(--color-primary-light);
+    color: var(--color-primary);
     line-height: 1;
     letter-spacing: -0.04em;
   }
 
   .stat-l {
     font-size: var(--font-size-xs);
-    color: #8A7A6A;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 600;
   }
 
   .stat-sep {
-    font-size: 1.5rem;
-    color: #3A2A1A;
+    width: 1px;
+    height: 2rem;
+    background: #1F3349;
+    opacity: 0.25;
     user-select: none;
     display: none;
   }
