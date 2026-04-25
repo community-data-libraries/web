@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = "dist"
+  publish = "dist/web"
   functions = "netlify/functions"
 
 # ── Form submission webhook ──────────────────────────────────────────────────
@@ -22,16 +22,6 @@
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
 [[redirects]]
-  from = "/"
-  to = "/web/"
-  status = 302
-
-[[redirects]]
-  from = "/web"
-  to = "/web/"
-  status = 301
-
-[[redirects]]
-  from = "/web/*"
-  to = "/:splat"
+  from = "/*"
+  to = "/index.html"
   status = 200
