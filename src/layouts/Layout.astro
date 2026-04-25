@@ -66,7 +66,7 @@ const siteTitle =
         </div>
         <div class="footer-bottom">
           <p class="footer-copy">&copy; {new Date().getFullYear()} Community Data Libraries. Open source under MIT.</p>
-          <p class="footer-tagline-bottom">Built with Astro · Hosted on Netlify</p>
+          <p class="footer-tagline-bottom">Built with Astro · Hosted on Netlify · Created by <a href="https://opalslab.org" target="_blank" rel="noopener noreferrer">OPALS Lab</a></p>
         </div>
       </div>
     </footer>
@@ -113,7 +113,7 @@ const siteTitle =
     /* Text */
     --color-text: #0F172A;
     --color-text-muted: #52606D;
-    --color-text-dim: #7C8A96;
+    --color-text-dim: #556470;
 
     /* Typography */
     --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -269,9 +269,9 @@ const siteTitle =
     justify-content: center;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-6);
-    background-color: var(--color-primary);
+    background-color: var(--color-secondary);
     color: #F8FAFC;
-    border: 1.5px solid var(--color-primary);
+    border: 1.5px solid var(--color-secondary);
     border-radius: var(--radius-md);
     font-family: var(--font-sans);
     font-size: var(--font-size-sm);
@@ -284,9 +284,9 @@ const siteTitle =
   }
 
   button:hover, .button:hover {
-    background-color: var(--color-primary-dark);
-    border-color: var(--color-primary-dark);
-    box-shadow: var(--shadow-glow-primary);
+    background-color: #0F4A5E;
+    border-color: #0F4A5E;
+    box-shadow: var(--shadow-glow-secondary);
     transform: translateY(-1px);
     text-decoration: none;
     color: #F8FAFC;
@@ -296,7 +296,7 @@ const siteTitle =
      Footer
   ============================================= */
   footer {
-    background-color: var(--color-text);
+    background-color: #1F3349;
     color: #D6C9B8;
     padding: var(--space-12) var(--space-6) var(--space-8);
     margin-top: var(--space-16);
@@ -380,7 +380,7 @@ const siteTitle =
   .footer-tagline {
     margin: 0;
     font-size: var(--font-size-sm);
-    color: #8A7A6A;
+    color: #A0B4C4;
     line-height: var(--line-height-relaxed);
     max-width: 30ch;
   }
@@ -394,7 +394,7 @@ const siteTitle =
 
   .footer-links a {
     font-size: var(--font-size-sm);
-    color: #8A7A6A;
+    color: #A0B4C4;
     text-decoration: none;
     transition: color 0.15s ease;
     font-weight: 500;
@@ -415,16 +415,27 @@ const siteTitle =
 
   .footer-copy {
     font-size: var(--font-size-xs);
-    color: #5A4A3A;
+    color: #8BA4B8;
     margin: 0;
     font-family: var(--font-mono);
   }
 
   .footer-tagline-bottom {
     font-size: var(--font-size-xs);
-    color: #5A4A3A;
+    color: #8BA4B8;
     margin: 0;
     font-family: var(--font-mono);
+  }
+
+  .footer-tagline-bottom a {
+    color: var(--color-primary-light);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .footer-tagline-bottom a:hover {
+    color: #FFFFFF;
+    text-decoration: underline;
   }
 
   /* =============================================
