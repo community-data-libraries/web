@@ -22,6 +22,16 @@
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/"
+  to = "/web/"
+  status = 302
+
+[[redirects]]
+  from = "/web"
+  to = "/web/"
+  status = 301
+
+[[redirects]]
+  from = "/web/*"
+  to = "/:splat"
   status = 200
