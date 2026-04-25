@@ -31,5 +31,5 @@ const completeCatalogCollection = defineCollection({
 });
 
 export const collections = {
-  'complete-catalog': completeCatalogCollection,
+  'master-library': completeCatalogCollection,
 };
