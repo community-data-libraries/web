@@ -31,10 +31,12 @@ const siteTitle =
     <meta property="og:type" content="website" />
 
     <link rel="icon" type="image/svg+xml" href={withBasePath('/favicon.svg')} />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Fraunces: expressive serif for display — Outfit: clean geometric sans for body — JetBrains Mono -->
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- Neco: expressive serif for display — Outfit: clean geometric sans for body — JetBrains Mono -->
+    <link href="https://api.fontshare.com/v2/css?f[]=boska@400,700,900,400i,700i,900i&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <title>{siteTitle}</title>
     <slot name="head" />
   </head>
@@ -116,7 +118,7 @@ const siteTitle =
     --color-text-dim: #556470;
 
     /* Typography */
-    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-display: 'Boska', Georgia, 'Times New Roman', serif;
     --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
 
