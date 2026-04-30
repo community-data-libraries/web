@@ -1,0 +1,204 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { withBasePath } from '@lib/paths';
+---
+
+<Layout
+  title="Build a Community Library"
+  description="Step-by-step instructions for setting up a Community Data Library for your city, county, or organization."
+>
+  <section class="page-shell">
+    <header class="page-header">
+      <p class="eyebrow">Get Started</p>
+      <h1>Build a Community Library</h1>
+      <p class="intro">
+        A Community Data Library gives your city, county, school system, or organization its own curated catalog of datasets — automatically filtered to your geography and kept up to date.
+      </p>
+    </header>
+
+    <div class="steps">
+      <article class="step-card">
+        <div class="step-num">01</div>
+        <h2>Fork or copy the template</h2>
+        <p>
+          The Community Data Libraries template is open source. Start by forking the
+          <a href="https://github.com/community-data-libraries/web" target="_blank" rel="noopener noreferrer">GitHub repository</a>
+          or using it as a template to create your own repository.
+        </p>
+      </article>
+
+      <article class="step-card">
+        <div class="step-num">02</div>
+        <h2>Configure your geography</h2>
+        <p>
+          Set your community's geographic scope — state, county, city, or custom region. The library will automatically surface datasets relevant to your area from the master catalog.
+        </p>
+      </article>
+
+      <article class="step-card">
+        <div class="step-num">03</div>
+        <h2>Deploy to the web</h2>
+        <p>
+          Deploy your library for free on Netlify, Vercel, or GitHub Pages. No server required — the site is fully static and builds automatically when the master catalog is updated.
+        </p>
+      </article>
+
+      <article class="step-card">
+        <div class="step-num">04</div>
+        <h2>Share with your community</h2>
+        <p>
+          Share the link with teachers, researchers, journalists, and community members. Submit your library to be listed on the Community Data Libraries directory so others can find it.
+        </p>
+      </article>
+    </div>
+
+    <div class="cta-row">
+      <a href="https://github.com/community-data-libraries/web" target="_blank" rel="noopener noreferrer" class="btn-primary">
+        View the template on GitHub
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+      <a href={withBasePath('/example-community-library')} class="btn-ghost">
+        See an example library
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <style>
+    .page-shell {
+      display: grid;
+      gap: var(--space-12);
+      max-width: 860px;
+    }
+
+    .page-header {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .eyebrow {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--color-secondary);
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: clamp(2.25rem, 4vw, 3.5rem);
+    }
+
+    .intro {
+      margin: 0;
+      max-width: 62ch;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-lg);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .steps {
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    @media (min-width: 640px) {
+      .steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .step-card {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      display: grid;
+      gap: var(--space-3);
+      align-content: start;
+    }
+
+    .step-num {
+      width: 3rem;
+      height: 3rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-lg);
+      background: var(--color-primary-glow);
+      color: var(--color-primary);
+      font-weight: 700;
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+    }
+
+    .step-card h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+    }
+
+    .step-card p {
+      margin: 0;
+      color: var(--color-text-muted);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .step-card a {
+      color: var(--color-primary);
+    }
+
+    .cta-row {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-6);
+      background: var(--color-secondary);
+      color: #F8FAFC;
+      border: 1.5px solid var(--color-secondary);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .btn-primary:hover {
+      background: #0F4A5E;
+      border-color: #0F4A5E;
+      transform: translateY(-1px);
+      text-decoration: none;
+      color: #F8FAFC;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-surface-raised);
+      color: var(--color-text-muted);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: var(--color-primary-glow);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+  </style>
+</Layout>

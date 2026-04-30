@@ -2,11 +2,12 @@
 import Layout from '@layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import submissions from '@data/community-submissions.json';
+import communityLibraries from '@data/community-libraries.json';
 import { withBasePath } from '@lib/paths';
 
 const catalogResources = await getCollection('master-library');
 const datasetCount = catalogResources.filter((entry) => entry.data.category === 'dataset').length;
-const communityResourceCount = submissions.length;
+const communityLibraryCount = communityLibraries.length;
 const regionCount = new Set(submissions.map((entry) => entry.region)).size;
 ---
 
@@ -121,7 +122,7 @@ const regionCount = new Set(submissions.map((entry) => entry.region)).size;
     </div>
     <div class="stat-sep" aria-hidden="true"></div>
     <div class="stat-item">
-      <span class="stat-n">{communityResourceCount}</span>
+      <span class="stat-n">{communityLibraryCount}</span>
       <span class="stat-l">Community Libraries</span>
     </div>
     <div class="stat-sep" aria-hidden="true"></div>
