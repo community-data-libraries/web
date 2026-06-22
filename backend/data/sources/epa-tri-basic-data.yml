@@ -15,3 +15,11 @@ download:
     to directly download the data file.
   file_size: varies by selection
 sensitive: false
+description_tags:
+- Business & Finance
+- Children & Families
+- Energy & Environment
+- Government Administration
+- Health & Social Services
+- Law & Public Safety
+- Population Data

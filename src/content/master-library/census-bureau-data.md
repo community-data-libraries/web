@@ -26,6 +26,7 @@ sensitive: false
 url: "https://data.census.gov/"
 featured: true
 difficulty: "intermediate"
+sourceId: "census-county-estimates-all-2025"
 language: "English"
 ---
 

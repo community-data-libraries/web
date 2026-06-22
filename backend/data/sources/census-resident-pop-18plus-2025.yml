@@ -1,8 +1,8 @@
 id: census-resident-pop-18plus-2025
 version: '1.0'
-title: Estimates of the Total Resident Population and Resident Population Age 18
-  Years and Older for the United States, Regions, States, District of Columbia, and
-  Puerto Rico - July 1 2025
+title: Estimates of the Total Resident Population and Resident Population Age 18 Years
+  and Older for the United States, Regions, States, District of Columbia, and Puerto
+  Rico - July 1 2025
 provider:
   name: U.S. Census Bureau
   agency: U.S. Department of Commerce
@@ -18,3 +18,36 @@ variables:
 - Resident Population Age 18 Years and Older Number
 - Resident Population Age 18 Years and Older Percent
 sensitive: false
+description_tags:
+- Business & Finance
+- Children & Families
+- Economy
+- Election
+- Energy & Environment
+- Government Administration
+- Health & Social Services
+- Housing & Buildings
+- Labor & Workforce Development
+- Population Data
+- PreK-12 Education
+- Transportation
+variable_names:
+- table with row headers in column A and column headers in rows 3 through 5. (leading
+  dots indicate sub-parts)
+variable_report:
+- name: table with row headers in column A and column headers in rows 3 through 5.
+    (leading dots indicate sub-parts)
+  type: string
+  total_rows: 67
+  non_empty_count: 65
+  missing_count: 2
+  missing_pct: 2.99
+  unique_count: 65
+  sample_values:
+  - "Estimates of the Total Resident Population and Resident Population Age 18 Years\
+    \ and Older \nfor the United States, Regions, States, District of Columbia, and\
+    \ Puerto Rico: July 1, 2025"
+  - Geographic Area
+  - United States
+  - Northeast
+  - Midwest

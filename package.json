@@ -5,7 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "backend:dev": "node backend/server.mjs",
+    "backend:dev": "BACKEND_PORT=4323 node --experimental-sqlite backend/server.mjs",
+    "sync:backend-yaml": "node scripts/sync-backend-yaml.mjs",
+    "check:backend-yaml": "node scripts/check-backend-yaml-sync.mjs",
+    "sync:catalog": "node scripts/sync-catalog-from-backend.mjs",
+    "backend:import": "node scripts/import-backend-sqlite.mjs",
+    "backend:pipeline": "node scripts/run-backend-pipeline.mjs",
+    "prebuild": "npm run sync:backend-yaml && npm run check:backend-yaml && npm run sync:catalog",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -36,6 +42,8 @@
   "dependencies": {
     "@astrojs/react": "^5.0.4",
     "astro": "^6.1.9",
+    "adm-zip": "^0.5.16",
+    "csv-parse": "^5.6.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "yaml": "^2.8.1"

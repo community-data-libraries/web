@@ -13,13 +13,16 @@ npm run dev
 
 A minimal backend is available in `backend/` and reads YAML source files from `backend/data/sources/`.
 
-Run it from the project root:
+For data preview pages, run **both** servers in separate terminals:
 
 ```bash
-npm run backend:dev
+npm run backend:dev   # preview API on http://localhost:4323
+npm run dev           # Astro site on http://localhost:4321/web
 ```
 
-Base URL: `http://localhost:4322`
+In development, the Astro dev server proxies `/api/sources` and `/api/health` to the preview API, so you usually do not need `PUBLIC_API_BASE_URL` in `.env`.
+
+Base URL (direct): `http://localhost:4323`
 
 ## Geographic Markers
 

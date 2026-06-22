@@ -26,6 +26,14 @@ function formatDate(date: Date | undefined): string {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+function getPreviewHref(resource: (typeof allResources)[number]): string {
+  const source = resource.data.sourceId;
+  if (!source) {
+    return resource.data.url ?? withBasePath('/complete-catalog');
+  }
+  return withBasePath(`/data-preview?source=${encodeURIComponent(source)}&audience=AUDIENCE_PLACEHOLDER`);
+}
+
 const base = '/example-community-library';
 ---
 
@@ -90,7 +98,7 @@ const base = '/example-community-library';
             const themes = resource.data.dataThemes.length > 0
               ? resource.data.dataThemes
               : resource.data.tags.filter(t => t !== 'knox-county' && t !== 'local' && t !== 'tennessee');
-            const previewHref = withBasePath(`/data-preview?entry=${encodeURIComponent(resource.id)}&audience=AUDIENCE_PLACEHOLDER`);
+            const previewHref = getPreviewHref(resource);
             const resourceAudiences = getAudiences(resource);
             return (
               <article class="dataset-card" data-audiences={resourceAudiences}>

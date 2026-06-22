@@ -25,3 +25,7 @@ variables:
 - Type of Weapon Involved
 - Offense Linked to Another Offense
 sensitive: true
+description_tags:
+- Energy & Environment
+- Government Administration
+- Law & Public Safety

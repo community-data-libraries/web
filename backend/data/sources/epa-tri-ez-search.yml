@@ -14,3 +14,7 @@ download:
     will provide a link to download the dataset.
   file_size: varies by selection
 sensitive: false
+description_tags:
+- Energy & Environment
+- Government Administration
+- Population Data

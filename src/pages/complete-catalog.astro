@@ -71,6 +71,14 @@ function formatDate(date: Date | undefined): string {
     day: 'numeric',
   });
 }
+
+function getPreviewHref(resource: (typeof resources)[number]): string {
+  const source = resource.data.sourceId;
+  if (!source) {
+    return resource.data.url ?? withBasePath('/complete-catalog');
+  }
+  return withBasePath(`/data-preview?source=${encodeURIComponent(source)}&audience=AUDIENCE_PLACEHOLDER`);
+}
 ---
 
 <Layout title="Complete Catalog" description="All curated resources in the CDL complete catalog">
@@ -193,7 +201,7 @@ function formatDate(date: Date | undefined): string {
             <div class="cards-view">
               {sortedResources.map((resource) => {
                 const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
-                const previewHref = withBasePath(`/data-preview?entry=${encodeURIComponent(resource.id)}&audience=AUDIENCE_PLACEHOLDER`);
+                const previewHref = getPreviewHref(resource);
                 const resourceAudiences = getResourceAudiences(resource);
                 return (
                   <article
@@ -238,7 +246,7 @@ function formatDate(date: Date | undefined): string {
                 <tbody>
                   {sortedResources.map((resource) => {
                     const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
-                    const previewHref = withBasePath(`/data-preview?entry=${encodeURIComponent(resource.id)}&audience=AUDIENCE_PLACEHOLDER`);
+                    const previewHref = getPreviewHref(resource);
                     const resourceAudiences = getResourceAudiences(resource);
                     return (
                       <tr

@@ -14,3 +14,7 @@ download:
   description: Link downloads a ZIP file.
   file_size: 108 MB
 sensitive: false
+description_tags:
+- Energy & Environment
+- Government Administration
+- Population Data

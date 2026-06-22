@@ -13,3 +13,7 @@ download:
   description: Download link will be provided after selecting year.
   file_size: varies by selection
 sensitive: false
+description_tags:
+- Energy & Environment
+- Government Administration
+- Population Data

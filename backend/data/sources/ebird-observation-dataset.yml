@@ -13,3 +13,5 @@ requires_account: true
 download:
   description: Download link will be provided after selecting year and region.
 sensitive: false
+description_tags:
+- Population Data

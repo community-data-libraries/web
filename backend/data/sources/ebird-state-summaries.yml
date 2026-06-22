@@ -11,8 +11,8 @@ filters:
   zipcode: false
 requires_account: false
 download:
-  description: Download link for species-level summaries is available underneath
-    the state selection.
+  description: Download link for species-level summaries is available underneath the
+    state selection.
   file_size: varies by selection
 variables:
 - Scientific name
@@ -25,3 +25,5 @@ variables:
 - Breeding habitat primary
 - Breeding habitat secondary
 sensitive: false
+description_tags:
+- Government Administration
