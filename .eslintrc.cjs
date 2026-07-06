@@ -1,7 +1,12 @@
 /* eslint-env node */
 module.exports = {
   root: true,
+  ignorePatterns: ['dist/', 'node_modules/'],
   env: { browser: true, es2022: true, node: true },
+  globals: {
+    L: 'readonly',
+    ApexCharts: 'readonly',
+  },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
