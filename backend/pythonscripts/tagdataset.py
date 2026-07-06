@@ -6,8 +6,8 @@ What it does:
 - Reads one or more YAML files from backend/data/sources
 - Uses the requests library to fetch text content from any URLs found in the YAML
 - Collects text from YAML fields + URL page content
-- Generates simple keyword-based description tags
-- Writes tags back to each file as: description_tags: [..]
+- Generates keyword-based description tags using canonical category names
+- Writes tags back to each file as: description_tags: {Category: true/false, ...}
 
 Usage:
     python backend/pythonscripts/tagdataset.py all
@@ -29,24 +29,118 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_SOURCES_DIR = SCRIPT_DIR.parent / "data" / "sources"
 
 
-# Keyword map, update as needed
-# words on the left are the tags that will be applied if any of the words on the right are found in the text
-TAG_RULES = {
-    "health": ["health", "cdc", "disease", "mortality", "obesity", "diabetes", "chronic", "brfss", "risk factor"],
-    "demographics": ["demographic", "population", "household", "race", "age", "sex", "hispanic", "origin"],
-    "census": ["census", "acs", "american community survey", "fips", "decennial"],
-    "geospatial": ["county", "tract", "zip", "zcta", "state", "place", "geograph", "boundary", "coordinate", "cbsa", "metropolitan"],
-    "public-data": ["open data", "public", "government", "bureau", "cdc", "census"],
-    "api": ["api", "json", "csv", "endpoint", "download"],
-    "education": ["school", "district", "nces", "lea", "student", "achievement", "naep", "enrollment", "finance"],
-    "employment": ["employment", "unemployment", "wage", "labor", "workforce", "payroll", "bls", "qcew", "laus", "occupation"],
-    "environment": ["environment", "epa", "air quality", "water", "superfund", "pollution", "emission", "toxic", "drinking water"],
-    "agriculture": ["agriculture", "farm", "crop", "usda", "rural", "livestock", "commodity"],
-    "climate": ["climate", "weather", "noaa", "temperature", "precipitation", "storm", "ncei", "normal"],
-    "crime": ["crime", "fbi", "arrest", "offense", "law enforcement", "ucr", "nibrs", "violent", "property crime"],
-    "economic": ["economic", "business", "income", "poverty", "gdp", "establishment", "naics", "revenue", "earnings"],
-    "housing": ["housing", "rent", "mortgage", "homeowner", "vacancy", "residential", "unit"],
-    "wildlife": ["bird", "species", "observation", "occurrence", "biodiversity", "wildlife", "ebird", "habitat", "checklist", "ornithology"],
+# Canonical category names — must match the keys used in all source YAML files.
+CANONICAL_CATEGORIES = [
+    "Agriculture",
+    "Business & Finance",
+    "Children & Families",
+    "Economy",
+    "Election",
+    "PreK-12 Education",
+    "Energy & Environment",
+    "Government Administration",
+    "Health & Social Services",
+    "Higher Education",
+    "Historic Preservation",
+    "Housing & Buildings",
+    "Labor & Workforce Development",
+    "Law & Public Safety",
+    "Parks & Recreation",
+    "Population Data",
+    "Public Utilities",
+    "Restaurant and Food Service",
+    "Transportation",
+]
+
+# Maps each canonical category to the keywords that trigger it.
+TAG_RULES: dict[str, list[str]] = {
+    "Agriculture": [
+        "agriculture", "farm", "crop", "usda", "rural", "livestock",
+        "commodity", "milk", "dairy", "forestry", "fishery",
+    ],
+    "Business & Finance": [
+        "business", "finance", "revenue", "earnings", "commercial",
+        "naics", "establishment", "trade", "industry",
+    ],
+    "Children & Families": [
+        "child", "children", "family", "families", "youth", "juvenile",
+        "infant", "pediatric", "foster", "daycare",
+    ],
+    "Economy": [
+        "economic", "economy", "gdp", "income", "poverty", "gross domestic",
+        "wages", "labor force", "consumer price", "inflation",
+    ],
+    "Election": [
+        "election", "vote", "voter", "ballot", "candidate",
+        "precinct", "redistrict", "polling",
+    ],
+    "PreK-12 Education": [
+        "school", "district", "nces", "lea", "k-12", "prek",
+        "elementary", "secondary", "achievement", "enrollment", "naep",
+    ],
+    "Energy & Environment": [
+        "environment", "epa", "air quality", "water quality", "superfund",
+        "pollution", "emission", "toxic", "energy", "climate", "weather",
+        "noaa", "temperature", "precipitation", "storm", "wildlife",
+        "species", "bird", "biodiversity", "ebird", "habitat", "ecology",
+        "greenhouse", "renewable",
+    ],
+    "Government Administration": [
+        "government", "census", "bureau", "federal", "state agency",
+        "municipal", "public records", "acs", "american community survey",
+        "fips", "administrative", "county government",
+    ],
+    "Health & Social Services": [
+        "health", "cdc", "disease", "mortality", "obesity", "diabetes",
+        "chronic", "brfss", "risk factor", "social service", "welfare",
+        "disability", "mental health", "substance", "hospital", "clinic",
+        "medicaid", "medicare",
+    ],
+    "Higher Education": [
+        "college", "university", "higher education", "postsecondary",
+        "ipeds", "graduate", "undergraduate", "tuition",
+    ],
+    "Historic Preservation": [
+        "historic", "preservation", "heritage", "landmark",
+        "archaeological", "national register",
+    ],
+    "Housing & Buildings": [
+        "housing", "rent", "mortgage", "homeowner", "vacancy",
+        "residential", "building", "construction", "real estate",
+        "affordable housing", "eviction",
+    ],
+    "Labor & Workforce Development": [
+        "labor", "workforce", "occupation", "payroll", "bls", "qcew",
+        "laus", "job", "worker", "unemployment", "employment", "wage",
+        "apprenticeship",
+    ],
+    "Law & Public Safety": [
+        "crime", "fbi", "arrest", "offense", "law enforcement", "ucr",
+        "nibrs", "violent", "property crime", "safety", "police",
+        "fire department", "emergency", "incarceration", "court",
+    ],
+    "Parks & Recreation": [
+        "park", "recreation", "trail", "open space", "outdoor",
+        "national park", "greenway", "playground", "sports facility",
+    ],
+    "Population Data": [
+        "population", "demographic", "household", "race", "ethnicity",
+        "age", "sex", "gender", "hispanic", "origin", "migration",
+        "fertility", "birth rate", "death rate", "census population",
+    ],
+    "Public Utilities": [
+        "utility", "water system", "sewer", "wastewater", "electricity",
+        "natural gas", "broadband", "internet", "telecom", "public works",
+    ],
+    "Restaurant and Food Service": [
+        "restaurant", "food service", "dining", "food safety",
+        "inspection", "catering", "foodborne", "grocery",
+    ],
+    "Transportation": [
+        "transportation", "transit", "road", "highway", "traffic",
+        "vehicle", "commute", "rail", "aviation", "airport", "bridge",
+        "bicycle", "pedestrian", "freight",
+    ],
 }
 
 def find_yaml_files(sources_dir: Path, one_file: str | None) -> list[Path]:
@@ -110,16 +204,13 @@ def build_text_blob(data: dict[str, Any], timeout: int, max_url_text: int) -> st
     return "\n".join(parts).lower()
 
 
-def infer_tags(text: str) -> list[str]:
-    tags: set[str] = set()
-    for tag, keywords in TAG_RULES.items():
+def infer_tags(text: str) -> dict[str, bool]:
+    """Return a full canonical dict with every category set to true or false."""
+    matched: set[str] = set()
+    for category, keywords in TAG_RULES.items():
         if any(word in text for word in keywords):
-            tags.add(tag)
-
-    if not tags:
-        tags.add("dataset")
-
-    return sorted(tags)
+            matched.add(category)
+    return {category: (category in matched) for category in CANONICAL_CATEGORIES}
 
 
 def process_file(path: Path, timeout: int, max_url_text: int, dry_run: bool) -> None:
@@ -135,7 +226,8 @@ def process_file(path: Path, timeout: int, max_url_text: int, dry_run: bool) -> 
     text_blob = build_text_blob(data, timeout=timeout, max_url_text=max_url_text)
     tags = infer_tags(text_blob)
 
-    print(f"  - Tags: {tags}")
+    active = [cat for cat, on in tags.items() if on]
+    print(f"  - Tags: {active if active else '(none matched)'}")
 
     if dry_run:
         return
