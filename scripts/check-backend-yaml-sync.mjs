@@ -38,8 +38,10 @@ async function main() {
   try {
     canonicalFiles = await listSourceFiles(canonicalDir);
   } catch {
-    console.error(`Cannot read canonical sources: ${canonicalDir}`);
-    process.exit(1);
+    console.warn(`Canonical backend sources not found: ${canonicalDir}`);
+    console.warn('Skipping sync check — no canonical source to compare against.');
+    console.warn('Set BACKEND_SOURCES_DIR or BACKEND_ROOT to enable this check.');
+    process.exit(0);
   }
 
   let webFiles;

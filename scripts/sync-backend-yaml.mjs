@@ -38,9 +38,10 @@ async function main() {
   try {
     canonicalStat = await stat(canonicalDir);
   } catch {
-    console.error(`Canonical backend sources not found: ${canonicalDir}`);
-    console.error('Set BACKEND_SOURCES_DIR or BACKEND_ROOT to the backend repo path.');
-    process.exit(1);
+    console.warn(`Canonical backend sources not found: ${canonicalDir}`);
+    console.warn('Skipping sync — using committed copies in backend/data/sources.');
+    console.warn('Set BACKEND_SOURCES_DIR or BACKEND_ROOT to sync from the backend repo.');
+    process.exit(0);
   }
   if (!canonicalStat.isDirectory()) {
     console.error(`Not a directory: ${canonicalDir}`);
