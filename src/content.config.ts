@@ -1,7 +1,7 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-const completeCatalogCollection = defineCollection({
+const masterLibraryCollection = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/master-library' }),
   schema: z.object({
     title: z.string(),
@@ -11,6 +11,10 @@ const completeCatalogCollection = defineCollection({
     tags: z.array(z.string()).default([]),
     dataThemes: z.array(z.string()).default([]),
     pedagogicalTags: z.array(z.string()).default([]),
+    category: z.string().optional(),
+    difficulty: z.string().optional(),
+    sourceId: z.string().optional(),
+    syncedFromBackend: z.boolean().default(false),
     audienceAccess: z
       .object({
         teacher: z.boolean().default(true),
@@ -31,5 +35,5 @@ const completeCatalogCollection = defineCollection({
 });
 
 export const collections = {
-  'complete-catalog': completeCatalogCollection,
+  'master-library': masterLibraryCollection,
 };

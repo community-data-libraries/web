@@ -28,6 +28,7 @@ export const GET: APIRoute = async () => {
     dataThemes: entry.data.dataThemes,
     pedagogicalTags: entry.data.pedagogicalTags,
     difficulty: entry.data.difficulty ?? null,
+    sourceId: entry.data.sourceId ?? null,
     url: entry.data.url ?? null,
     fileUrl: entry.data.fileUrl ?? null,
     featured: entry.data.featured,

@@ -1,195 +1,1285 @@
 ---
 import Layout from '@layouts/Layout.astro';
-import { getCollection } from 'astro:content';
 import { withBasePath } from '@lib/paths';
 
-const all = await getCollection('master-library');
-const datasets = all.filter((entry) => entry.data.category === 'dataset');
-const selectedEntryId = (Astro.url.searchParams.get('entry') ?? '').trim();
-const selectedEntry = selectedEntryId ? datasets.find((entry) => entry.id === selectedEntryId) : undefined;
-const sourceAudience = (Astro.url.searchParams.get('audience') ?? '').trim();
+const audience = (Astro.url.searchParams.get('audience') ?? '').trim();
+const tutorialHref = withBasePath('/data-resources');
+const catalogHref = withBasePath('/complete-catalog');
 ---
 
-<Layout title="Data Preview" description="Preview of dataset entries from the complete catalog">
-  <section class="preview-shell">
-    <h1>Data Preview</h1>
-    <p class="intro">
-      Listing datasets from the complete catalog with native project blocks.
-      {sourceAudience && <span> Opened from the {sourceAudience} view.</span>}
-    </p>
+<Layout title="Data Preview" description="Interactive preview of dataset sources with metrics and geographic filters">
+  <Fragment slot="head">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js" is:inline></script>
+  </Fragment>
 
-    {selectedEntry && (
-      <article class="detail-card">
-        <div class="detail-header">
-          <div>
-            <p class="eyebrow">Catalog preview</p>
-            <h2>{selectedEntry.data.title}</h2>
-          </div>
-          <a href={withBasePath('/complete-catalog')} class="button button-secondary">Back to Complete Catalog</a>
-        </div>
-        <p>{selectedEntry.data.description}</p>
-        <div class="detail-grid">
-          <div>
-            <h3>Themes</h3>
-            <p>{selectedEntry.data.dataThemes.join(', ') || 'Not specified'}</p>
-          </div>
-          <div>
-            <h3>Tags</h3>
-            <p>{selectedEntry.data.tags.join(', ') || 'Not specified'}</p>
-          </div>
-          <div>
-            <h3>Pedagogical Tags</h3>
-            <p>{selectedEntry.data.pedagogicalTags.join(', ') || 'Not specified'}</p>
-          </div>
-        </div>
-        {selectedEntry.data.url && (
-          <a href={selectedEntry.data.url} target="_blank" rel="noopener noreferrer" class="button">Visit source</a>
-        )}
-      </article>
-    )}
+  <section class="preview-page" id="preview-page">
+    <div id="loading-state" class="status-panel">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p>Loading dataset preview…</p>
+    </div>
 
-    {datasets.length === 0 ? (
-      <div class="empty-state">
-        <p>No datasets found.</p>
+    <div id="error-state" class="status-panel error-panel" hidden>
+      <h2>Unable to load preview</h2>
+      <p id="error-message"></p>
+      <p class="error-hint">Start the preview API in a separate terminal: <code>npm run backend:dev</code> (runs on port 4323).</p>
+      <p class="error-hint">The Astro dev server may use port 4322 when 4321 is busy — that is not the preview API.</p>
+    </div>
+
+    <div id="source-picker" class="source-picker" hidden>
+      <nav class="preview-breadcrumb" aria-label="Breadcrumb">
+        <a href={catalogHref} class="back-link">← Complete Catalog</a>
+      </nav>
+      <h1 class="page-title">Data Preview</h1>
+      <p class="page-intro">Select a dataset source to preview. Live previews require the backend API.</p>
+      <ul id="source-list" class="source-grid"></ul>
+    </div>
+
+    <div id="preview-content" hidden>
+      <nav class="preview-breadcrumb" aria-label="Breadcrumb">
+        <a href={catalogHref} class="back-link">← Complete Catalog</a>
+      </nav>
+
+      <header class="preview-header">
+        <div class="header-main">
+          <h1 class="page-title" id="source-title"></h1>
+          <p class="source-provider" id="source-provider" hidden></p>
+          <div class="description-card" id="source-description"></div>
+          {audience && <p class="audience-note">Opened from the {audience} catalog view.</p>}
+          <p class="account-warning" id="account-warning" hidden>
+            <span class="warning-icon" aria-hidden="true">!</span>
+            Requires a free account for downloads.
+          </p>
+        </div>
+      </header>
+
+      <div class="meta-actions-row panel-card">
+        <div class="tags-panel">
+          <div class="tag-group">
+            <span class="tag-label">Topical</span>
+            <div class="tag-chips" id="topical-tags"></div>
+          </div>
+          <div class="tag-group">
+            <span class="tag-label">Pedagogical</span>
+            <div class="tag-chips" id="pedagogical-tags"></div>
+          </div>
+          <div class="tag-group">
+            <span class="tag-label">Geographic</span>
+            <div class="tag-chips" id="geographic-tags"></div>
+          </div>
+        </div>
+
+        <div class="actions-panel">
+          <span class="actions-label">Get the data</span>
+          <div class="action-buttons">
+            <a id="download-btn" class="btn-download" href="#" target="_blank" rel="noopener noreferrer">
+              <span class="btn-icon" aria-hidden="true">↓</span>
+              Download
+            </a>
+            <a class="btn-tutorial" href={tutorialHref}>See tutorial</a>
+          </div>
+        </div>
       </div>
-    ) : (
-      <div class="preview-grid">
-        {datasets.map((item) => (
-          <article class="preview-card">
-            <h2>{item.data.title}</h2>
-            <p>{item.data.description}</p>
-            {item.data.tags && item.data.tags.length > 0 && (
-              <p class="meta">Tags: {item.data.tags.join(', ')}</p>
-            )}
-            {item.data.url && (
-              <a href={item.data.url} target="_blank" rel="noopener noreferrer" class="button">Visit</a>
-            )}
-          </article>
-        ))}
+
+      <div class="middle-row">
+        <aside class="datasheet-panel panel-card">
+          <h2 class="section-title">Datasheet</h2>
+          <dl class="datasheet-list">
+            <div class="datasheet-item"><dt>Who</dt><dd id="ds-who"></dd></div>
+            <div class="datasheet-item"><dt>How</dt><dd id="ds-how"></dd></div>
+            <div class="datasheet-item"><dt>Where</dt><dd id="ds-where"></dd></div>
+            <div class="datasheet-item"><dt>Why</dt><dd id="ds-why"></dd></div>
+            <div class="datasheet-item"><dt>When</dt><dd id="ds-when"></dd></div>
+          </dl>
+        </aside>
+
+        <div class="chart-panel panel-card">
+          <div class="chart-header">
+            <h2 class="section-title">Focal variable plot</h2>
+            <div class="chart-controls" id="chart-controls">
+              <label class="filter-control" id="state-filter-wrap" hidden>
+                <span>State</span>
+                <select id="state-filter"></select>
+              </label>
+              <label class="filter-control" id="county-filter-wrap" hidden>
+                <span>County</span>
+                <select id="county-filter">
+                  <option value="">All counties</option>
+                </select>
+              </label>
+              <label class="filter-control" id="x-variable-filter-wrap">
+                <span>X Variable</span>
+                <select id="x-variable-filter"></select>
+              </label>
+              <label class="filter-control">
+                <span>Variable</span>
+                <select id="variable-filter"></select>
+              </label>
+            </div>
+          </div>
+          <details class="reference-card" id="reference-card" hidden>
+            <summary class="reference-summary">Reference &amp; Guidance</summary>
+            <div class="reference-body" id="reference-body">
+              <!-- filled by JS -->
+            </div>
+          </details>
+          <div class="chart-canvas-wrap">
+            <div id="chart-loading" class="section-loading" hidden>Loading chart…</div>
+            <div id="focal-chart" aria-label="Focal variable chart"></div>
+          </div>
+        </div>
       </div>
-    )}
+
+      <div class="table-panel panel-card">
+        <div class="table-header">
+          <h2 class="section-title">Geographically filtered data preview</h2>
+          <p class="table-meta" id="table-meta"></p>
+        </div>
+        <div class="table-scroll">
+          <div id="table-loading" class="section-loading table-section-loading" hidden>Loading table…</div>
+          <div class="data-grid" id="preview-grid" role="grid" aria-label="Dataset preview">
+            <div class="data-grid-header" id="preview-grid-header"></div>
+            <div class="data-grid-body" id="preview-grid-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <style>
-    .preview-shell {
-      display: grid;
-      gap: var(--space-6);
+  <script>
+    import {
+      fetchSource,
+      fetchDatasheet,
+      fetchPreview,
+      fetchChart,
+      fetchFilterOptions,
+      fetchSources,
+      buildCatalogDescription,
+      normalizeDescriptionTags,
+      getPedagogicalTags,
+      getGeographicTags,
+    } from '@lib/api/backend';
+    import { withBasePath } from '@lib/paths';
+
+    function getSourceIdFromUrl() {
+      return new URLSearchParams(window.location.search).get('source')?.trim() ?? '';
     }
 
-    .detail-card {
-      border: 1px solid var(--color-border);
-      background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      padding: var(--space-6);
+    let sourceId = getSourceIdFromUrl();
+    let previewColumns = '';
+    let focalVariable = '';
+    let initialStateFilter = '';
+
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const errorMessage = document.getElementById('error-message');
+    const sourcePicker = document.getElementById('source-picker');
+    const sourceList = document.getElementById('source-list');
+    const previewContent = document.getElementById('preview-content');
+
+    const stateFilter = document.getElementById('state-filter') as HTMLSelectElement;
+    const countyFilter = document.getElementById('county-filter') as HTMLSelectElement;
+    const variableFilter = document.getElementById('variable-filter') as HTMLSelectElement;
+    const xVariableFilter = document.getElementById('x-variable-filter') as HTMLSelectElement;
+    const stateFilterWrap = document.getElementById('state-filter-wrap');
+    const countyFilterWrap = document.getElementById('county-filter-wrap');
+
+    let chartInstance = null;
+
+    function pickPreviewColumns(source) {
+      const skip = new Set(['SUMLEV', 'REGION', 'DIVISION']);
+      const vars = (source.variables ?? []).filter((v) => !skip.has(v));
+      return (vars.length > 0 ? vars : (source.variables ?? [])).join(',');
+    }
+
+    function pickFocalVariable(source) {
+      const numeric = source.variable_report?.find(
+        (v) => v.type === 'integer' || v.type === 'float',
+      );
+      if (numeric?.name) return numeric.name;
+
+      const vars = source.variables ?? [];
+      const preferred = vars.find((v) => /estimate|total|value|amount|production|population/i.test(v));
+      return preferred ?? vars[vars.length - 1] ?? '';
+    }
+
+    function pickInitialState(source) {
+      if (source.id === 'census-county-estimates-all-2025') return '47';
+      return '';
+    }
+
+    function showPreviewContent() {
+      loadingState?.setAttribute('hidden', '');
+      previewContent?.removeAttribute('hidden');
+    }
+
+    function setSectionLoading(chartLoading, tableLoading) {
+      document.getElementById('chart-loading')?.toggleAttribute('hidden', !chartLoading);
+      document.getElementById('table-loading')?.toggleAttribute('hidden', !tableLoading);
+      document.getElementById('preview-grid')?.toggleAttribute('hidden', tableLoading);
+    }
+
+    function showError(message) {
+      loadingState?.setAttribute('hidden', '');
+      previewContent?.setAttribute('hidden', '');
+      sourcePicker?.setAttribute('hidden', '');
+      errorState?.removeAttribute('hidden');
+      if (errorMessage) errorMessage.textContent = message;
+    }
+
+    function renderTags(containerId, tags, filledFirst = false) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+      if (!tags.length) {
+        container.innerHTML = '<span class="tag-chip tag-outline">Not specified</span>';
+        return;
+      }
+      tags.forEach((tag, i) => {
+        const chip = document.createElement('span');
+        chip.className = `tag-chip ${filledFirst && i === 0 ? 'tag-filled' : 'tag-outline'}`;
+        chip.textContent = tag;
+        container.appendChild(chip);
+        if (i < tags.length - 1) {
+          container.appendChild(document.createTextNode(', '));
+        }
+      });
+    }
+
+    function isNumericCell(value) {
+      if (value === '' || value == null) return false;
+      const n = Number(String(value).replace(/,/g, ''));
+      return !Number.isNaN(n) && String(value).trim() !== '';
+    }
+
+    function formatCell(value) {
+      if (!isNumericCell(value)) return String(value ?? '');
+      const n = Number(String(value).replace(/,/g, ''));
+      if (Number.isInteger(n) && Math.abs(n) >= 1000) return n.toLocaleString();
+      if (!Number.isInteger(n)) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      return String(n);
+    }
+
+    function renderChart(chartData) {
+      const container = document.getElementById('focal-chart');
+      const Apex = window.ApexCharts;
+      if (!container || typeof Apex === 'undefined') return;
+
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      const labels = chartData.series.map((p) => p.label);
+      const values = chartData.series.map((p) => p.value);
+
+      const isLineChart =
+        chartData.xVariable != null && labels.every((l) => !isNaN(Number(l)));
+      const chartType = isLineChart ? 'line' : 'bar';
+
+      chartInstance = new Apex(container, {
+        chart: {
+          type: chartType,
+          height: 300,
+          toolbar: { show: false },
+          fontFamily: 'Outfit, sans-serif',
+        },
+        series: [{ name: chartData.label, data: values }],
+        xaxis: {
+          categories: labels,
+          labels: {
+            rotate: labels.length > 8 ? -45 : 0,
+            trim: true,
+            hideOverlappingLabels: true,
+            style: { fontSize: '11px', colors: '#52606D' },
+          },
+          axisBorder: { show: false },
+          axisTicks: { show: false },
+        },
+        yaxis: {
+          labels: {
+            style: { colors: '#52606D', fontSize: '11px' },
+            formatter: (v) => {
+              const n = Number(v);
+              if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
+              if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+              if (Math.abs(n) >= 1e3) return `${(n / 1e3).toFixed(0)}k`;
+              return String(n);
+            },
+          },
+        },
+        colors: ['#155E75'],
+        plotOptions: {
+          bar: {
+            borderRadius: 3,
+            columnWidth: '60%',
+          },
+        },
+        dataLabels: { enabled: false },
+        grid: {
+          strokeDashArray: 4,
+          borderColor: '#D2DEE6',
+          xaxis: { lines: { show: false } },
+        },
+        tooltip: {
+          theme: 'light',
+          y: {
+            formatter: (v) => Number(v).toLocaleString(),
+          },
+        },
+      });
+
+      chartInstance.render();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function buildGridTemplate(columns, numericCols) {
+      return columns
+        .map((col, i) => {
+          if (numericCols[i]) return 'minmax(5.5rem, 1fr)';
+          const name = col.toUpperCase();
+          if (/NAME|COUNTY|LABEL|TITLE|DESCRIPTION/.test(name)) return 'minmax(9rem, 1.6fr)';
+          if (/STUSPS|STATE|FIPS|GEOID|ID|CODE/.test(name)) return 'minmax(4.5rem, 0.75fr)';
+          return 'minmax(7rem, 1fr)';
+        })
+        .join(' ');
+    }
+
+    function renderTable(preview) {
+      const grid = document.getElementById('preview-grid');
+      const header = document.getElementById('preview-grid-header');
+      const body = document.getElementById('preview-grid-body');
+      const meta = document.getElementById('table-meta');
+      if (!grid || !header || !body) return;
+
+      const numericCols = preview.columns.map((_, colIdx) =>
+        preview.rows.some((row) => isNumericCell(row[colIdx])),
+      );
+      const gridTemplate = buildGridTemplate(preview.columns, numericCols);
+
+      grid.style.setProperty('--grid-template', gridTemplate);
+      grid.style.gridTemplateColumns = gridTemplate;
+      grid.setAttribute('aria-colcount', String(preview.columns.length));
+      grid.setAttribute('aria-rowcount', String(preview.rows.length + 1));
+
+      header.innerHTML = `<div class="grid-row" role="row">${preview.columns
+        .map(
+          (c, i) =>
+            `<div class="grid-cell grid-header ${numericCols[i] ? 'col-numeric' : ''}" role="columnheader" title="${escapeHtml(c)}">${escapeHtml(c.replace(/_/g, ' '))}</div>`,
+        )
+        .join('')}</div>`;
+
+      body.innerHTML = preview.rows
+        .map(
+          (row, i) =>
+            `<div class="grid-row ${i % 2 === 0 ? 'row-even' : 'row-odd'}" role="row">${row
+              .map(
+                (cell, colIdx) =>
+                  `<div class="grid-cell ${numericCols[colIdx] ? 'col-numeric' : ''}" role="gridcell" title="${escapeHtml(cell)}">${escapeHtml(formatCell(cell))}</div>`,
+              )
+              .join('')}</div>`,
+        )
+        .join('');
+
+      if (meta) {
+        meta.textContent = `Showing ${preview.rows.length.toLocaleString()} of ${preview.total.toLocaleString()} rows`;
+      }
+    }
+
+    async function loadCountyOptions(currentState) {
+      if (!countyFilter) return;
+      countyFilter.innerHTML = '<option value="">All counties</option>';
+      if (!currentState) return;
+      const options = await fetchFilterOptions(sourceId, 'county', currentState);
+      for (const opt of options) {
+        const el = document.createElement('option');
+        el.value = opt.value;
+        el.textContent = opt.label;
+        countyFilter.appendChild(el);
+      }
+    }
+
+    async function refreshPreviewAndChart() {
+      const state = stateFilter?.value || undefined;
+      const county = countyFilter?.value || undefined;
+      const variable = variableFilter?.value || focalVariable;
+      const xVariable = xVariableFilter?.value || undefined;
+
+      setSectionLoading(true, true);
+      try {
+        const [preview, chart] = await Promise.all([
+          fetchPreview(sourceId, {
+            state,
+            county,
+            limit: 25,
+            columns: previewColumns || undefined,
+          }),
+          fetchChart(sourceId, { state, county, variable, xVariable, limit: 15 }),
+        ]);
+
+        renderTable(preview);
+        renderChart(chart);
+      } finally {
+        setSectionLoading(false, false);
+      }
+    }
+
+    function populateReferenceCard(source) {
+      const card = document.getElementById('reference-card');
+      const body = document.getElementById('reference-body');
+      if (!card || !body) return;
+      const geoTags = getGeographicTags(source);
+      const hasFips = geoTags.includes('state') || geoTags.includes('county');
+      if (!hasFips) return;
+      card.removeAttribute('hidden');
+      body.innerHTML = `
+        <ul class="reference-links">
+          <li><a href="https://www.census.gov/library/reference/code-lists/ansi/ansi-codes-for-states.html" target="_blank" rel="noopener noreferrer">State FIPS Codes (Census.gov)</a> — two-digit numeric codes used for each U.S. state/territory</li>
+          <li><a href="https://www.census.gov/library/reference/code-lists/ansi.html" target="_blank" rel="noopener noreferrer">County FIPS Codes (Census.gov)</a> — five-digit codes (state + county)</li>
+          <li><a href="https://www.nrcs.usda.gov/wps/portal/nrcs/detail/?cid=nrcs143_013696" target="_blank" rel="noopener noreferrer">USDA State/County Codes</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code" target="_blank" rel="noopener noreferrer">FIPS overview (Wikipedia)</a></li>
+        </ul>
+        <p class="reference-hint">Tip: use the two-digit state FIPS code (e.g., <code>47</code> for Tennessee, <code>06</code> for California) in the State filter above.</p>
+      `;
+    }
+
+    async function initSourcePicker() {
+      const sources = await fetchSources();
+      loadingState?.setAttribute('hidden', '');
+      sourcePicker?.removeAttribute('hidden');
+
+      if (!sourceList) return;
+      sourceList.innerHTML = sources
+        .map(
+          (s) =>
+            `<li class="source-card">
+              <a href="${withBasePath(`/data-preview?source=${encodeURIComponent(s.id)}`)}">
+                <span class="source-card-title">${s.title}</span>
+                ${s.id === 'census-county-estimates-all-2025' ? '<span class="demo-badge">Demo</span>' : ''}
+              </a>
+            </li>`,
+        )
+        .join('');
+    }
+
+    async function initPreview() {
+      sourceId = getSourceIdFromUrl();
+      if (!sourceId) {
+        return initSourcePicker();
+      }
+
+      const [source, datasheet] = await Promise.all([
+        fetchSource(sourceId),
+        fetchDatasheet(sourceId),
+      ]);
+
+      previewColumns = pickPreviewColumns(source);
+      focalVariable = pickFocalVariable(source);
+      initialStateFilter = pickInitialState(source);
+
+      showPreviewContent();
+      document.title = `${source.title} | Community Data Libraries`;
+
+      const titleEl = document.getElementById('source-title');
+      const descEl = document.getElementById('source-description');
+      const providerEl = document.getElementById('source-provider');
+      const downloadBtn = document.getElementById('download-btn') as HTMLAnchorElement;
+      const accountWarning = document.getElementById('account-warning');
+
+      if (titleEl) titleEl.textContent = source.title;
+      if (descEl) descEl.textContent = buildCatalogDescription(source);
+      if (providerEl && source.provider?.name) {
+        const agency = source.provider.agency ? ` · ${source.provider.agency}` : '';
+        providerEl.textContent = `${source.provider.name}${agency}`;
+        providerEl.removeAttribute('hidden');
+      }
+      if (downloadBtn && source.download?.url) downloadBtn.href = source.download.url;
+      if (accountWarning && source.requires_account) accountWarning.removeAttribute('hidden');
+
+      renderTags('topical-tags', normalizeDescriptionTags(source.description_tags), true);
+      renderTags('pedagogical-tags', getPedagogicalTags(source));
+      renderTags('geographic-tags', getGeographicTags(source));
+
+      const dsWho = document.getElementById('ds-who');
+      const dsHow = document.getElementById('ds-how');
+      const dsWhere = document.getElementById('ds-where');
+      const dsWhy = document.getElementById('ds-why');
+      const dsWhen = document.getElementById('ds-when');
+      if (dsWho) dsWho.textContent = datasheet.who;
+      if (dsHow) dsHow.textContent = datasheet.how;
+      if (dsWhere) dsWhere.textContent = datasheet.where;
+      if (dsWhy) dsWhy.textContent = datasheet.why;
+      if (dsWhen) dsWhen.textContent = datasheet.when;
+
+      const geoTags = getGeographicTags(source);
+      try {
+        if (geoTags.includes('state') && stateFilter && stateFilterWrap) {
+          stateFilterWrap.removeAttribute('hidden');
+          const stateOptions = await fetchFilterOptions(sourceId, 'state');
+          stateFilter.innerHTML =
+            '<option value="">All states</option>' +
+            stateOptions
+              .map(
+                (o) =>
+                  `<option value="${o.value}" ${o.value === initialStateFilter ? 'selected' : ''}>${o.label}</option>`,
+              )
+              .join('');
+        } else if (stateFilterWrap) {
+          stateFilterWrap.setAttribute('hidden', '');
+        }
+
+        if (geoTags.includes('county') && countyFilterWrap) {
+          countyFilterWrap.removeAttribute('hidden');
+          await loadCountyOptions(stateFilter?.value || initialStateFilter || undefined);
+        } else if (countyFilterWrap) {
+          countyFilterWrap.setAttribute('hidden', '');
+        }
+      } catch (filterError) {
+        console.warn('Filter options unavailable:', filterError);
+      }
+
+      if (variableFilter) {
+        const numericVars =
+          source.variable_report
+            ?.filter((v) => v.type === 'integer' || v.type === 'float')
+            .map((v) => v.name) ?? source.variables ?? [];
+
+        const uniqueVars = [...new Set(numericVars.filter(Boolean))];
+        const options = uniqueVars.length > 0 ? uniqueVars : [focalVariable].filter(Boolean);
+        variableFilter.innerHTML = options
+          .map(
+            (v) =>
+              `<option value="${v}" ${v === focalVariable ? 'selected' : ''}>${v.replace(/_/g, ' ')}</option>`,
+          )
+          .join('');
+      }
+
+      if (xVariableFilter) {
+        const report = source.variable_report ?? [];
+        const allCols = source.variables ?? [];
+        // Non-numeric (label/time) columns first, then numeric
+        const nonNumeric = report
+          .filter((v) => v.type !== 'integer' && v.type !== 'float')
+          .map((v) => v.name)
+          .filter((n) => allCols.includes(n));
+        const numeric = report
+          .filter((v) => v.type === 'integer' || v.type === 'float')
+          .map((v) => v.name)
+          .filter((n) => allCols.includes(n));
+        const ordered = [...new Set([...nonNumeric, ...numeric, ...allCols])];
+        const xOptions = ordered.length > 0 ? ordered : allCols;
+        // Auto-detect default X: first temporal column or first column
+        const temporalNames = ['YEAR', 'DATE', 'PERIOD', 'TIMEPERIOD_NAME'];
+        const defaultX =
+          xOptions.find((v) => temporalNames.includes(v.toUpperCase())) ?? xOptions[0] ?? '';
+        xVariableFilter.innerHTML = xOptions
+          .map(
+            (v) =>
+              `<option value="${v}" ${v === defaultX ? 'selected' : ''}>${v.replace(/_/g, ' ')}</option>`,
+          )
+          .join('');
+      }
+
+      populateReferenceCard(source);
+
+      await refreshPreviewAndChart();
+
+      stateFilter?.addEventListener('change', async () => {
+        await loadCountyOptions(stateFilter.value);
+        if (countyFilter) countyFilter.value = '';
+        await refreshPreviewAndChart();
+      });
+      countyFilter?.addEventListener('change', refreshPreviewAndChart);
+      variableFilter?.addEventListener('change', refreshPreviewAndChart);
+      xVariableFilter?.addEventListener('change', refreshPreviewAndChart);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.has('source')) {
+      initPreview().catch((err) => showError(err instanceof Error ? err.message : String(err)));
+    } else {
+      initSourcePicker().catch((err) => showError(err instanceof Error ? err.message : String(err)));
+    }
+  </script>
+
+  <style>
+    .preview-page {
       display: grid;
-      gap: var(--space-4);
+      gap: var(--space-6);
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: var(--space-4) 0 var(--space-12);
+    }
+
+    #preview-content,
+    #source-picker {
+      display: grid;
+      gap: var(--space-8);
+    }
+
+    .panel-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
       box-shadow: var(--shadow-sm);
     }
 
-    .detail-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--space-4);
-      flex-wrap: wrap;
+    .preview-breadcrumb {
+      margin-bottom: 0;
     }
 
-    .eyebrow {
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      color: var(--color-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: clamp(var(--font-size-2xl), 4vw, var(--font-size-4xl));
+      font-weight: 700;
+      color: var(--color-text);
       margin: 0 0 var(--space-2);
+      line-height: var(--line-height-tight);
+      letter-spacing: -0.02em;
+    }
+
+    .source-provider {
+      margin: 0 0 var(--space-4);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-secondary);
+      letter-spacing: 0.01em;
+    }
+
+    .page-intro,
+    .audience-note {
+      color: var(--color-text-muted);
+      margin: 0 0 var(--space-4);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .preview-header {
+      padding: 0;
+    }
+
+    .description-card {
+      background: var(--color-surface-raised);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height-relaxed);
+      margin-bottom: var(--space-3);
+    }
+
+    .account-warning {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin: 0;
+      padding: var(--space-2) var(--space-3);
+      background: rgba(21, 94, 117, 0.08);
+      border: 1px solid rgba(21, 94, 117, 0.2);
+      border-radius: var(--radius-sm);
+      color: var(--color-secondary);
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+    }
+
+    .warning-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .status-panel {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-12) var(--space-8);
+      text-align: center;
+      color: var(--color-text-muted);
+    }
+
+    .loading-spinner {
+      width: 2rem;
+      height: 2rem;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-secondary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-panel h2 {
+      margin: 0 0 var(--space-2);
+      font-size: var(--font-size-xl);
+      font-family: var(--font-display);
+    }
+
+    .error-hint {
+      margin-top: var(--space-4);
+      font-size: var(--font-size-sm);
+    }
+
+    .error-hint code {
+      font-family: var(--font-mono);
+      background: var(--color-surface-raised);
+      padding: 0.1em 0.4em;
+      border-radius: var(--radius-sm);
+    }
+
+    .meta-actions-row {
+      display: grid;
+      gap: var(--space-5);
+      padding: var(--space-6) var(--space-6);
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 900px) {
+      .meta-actions-row {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: var(--space-8);
+      }
+    }
+
+    .tags-panel {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .tag-group {
+      display: grid;
+      grid-template-columns: 6.5rem 1fr;
+      align-items: baseline;
+      gap: var(--space-3);
+    }
+
+    @media (max-width: 520px) {
+      .tag-group {
+        grid-template-columns: 1fr;
+        gap: var(--space-1);
+      }
+    }
+
+    .tag-label,
+    .actions-label {
       font-size: var(--font-size-xs);
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--color-secondary);
+      color: var(--color-text-dim);
+      white-space: nowrap;
     }
 
-    .detail-card h2 {
+    .section-title {
       margin: 0;
-      font-size: var(--font-size-2xl);
+      font-family: var(--font-display);
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.01em;
     }
 
-    .detail-card h3 {
-      margin: 0 0 var(--space-1);
-      font-size: var(--font-size-sm);
+    .tag-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2em 0.65em;
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .tag-filled {
+      background: rgba(21, 94, 117, 0.12);
+      color: var(--color-secondary);
+      border: 1px solid rgba(21, 94, 117, 0.25);
+    }
+
+    .tag-outline {
+      background: var(--color-surface-raised);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+    }
+
+    .actions-panel {
+      display: grid;
+      gap: var(--space-2);
+      padding-top: var(--space-1);
+      border-top: 1px solid var(--color-border);
+    }
+
+    @media (min-width: 900px) {
+      .actions-panel {
+        padding-top: 0;
+        border-top: none;
+        justify-items: end;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    @media (min-width: 900px) {
+      .action-buttons {
+        justify-content: flex-end;
+      }
+    }
+
+    .btn-download,
+    .btn-tutorial {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0.55em 1.1em;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
+      text-decoration: none;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-download {
+      background: var(--color-secondary);
+      color: #fff;
+      border-color: var(--color-secondary);
+    }
+
+    .btn-download:hover {
+      background: var(--color-secondary-light);
+      opacity: 1;
+    }
+
+    .btn-tutorial {
+      background: var(--color-surface-raised);
+      color: var(--color-text);
+      border-color: var(--color-border-highlight);
+    }
+
+    .btn-tutorial:hover {
+      background: var(--color-surface);
+      border-color: var(--color-secondary);
+      color: var(--color-secondary);
+      opacity: 1;
+    }
+
+    .btn-icon {
+      font-size: 1em;
+      line-height: 1;
+    }
+
+    .middle-row {
+      display: grid;
+      gap: var(--space-6);
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    @media (min-width: 960px) {
+      .middle-row {
+        grid-template-columns: minmax(240px, 280px) 1fr;
+      }
+    }
+
+    .datasheet-panel {
+      padding: var(--space-6);
+      background: var(--color-surface-raised);
+      border-color: var(--color-border);
+      align-self: stretch;
+    }
+
+    .datasheet-panel .section-title {
+      margin-bottom: var(--space-4);
+      font-size: var(--font-size-base);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       color: var(--color-text-dim);
     }
 
-    .detail-card p {
+    .datasheet-list {
       margin: 0;
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .datasheet-item {
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .datasheet-item:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .datasheet-item dt {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-secondary);
+      margin-bottom: var(--space-1);
+    }
+
+    .datasheet-item dd {
+      margin: 0;
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .chart-panel,
+    .table-panel {
+      padding: var(--space-6) var(--space-6);
+    }
+
+    .chart-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .chart-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .filter-control {
+      display: grid;
+      gap: var(--space-1);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      color: var(--color-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 0;
+    }
+
+    .filter-control select {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-sm);
+      padding: 0.45em 2em 0.45em 0.65em;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2355606D' d='M2 4l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 0.6em center;
+      background-size: 10px;
+      color: var(--color-text);
+      min-width: 9rem;
+      max-width: 100%;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .filter-control select:focus {
+      outline: 2px solid var(--color-secondary-glow);
+      border-color: var(--color-secondary);
+    }
+
+    .chart-canvas-wrap {
+      position: relative;
+      min-height: 300px;
+    }
+
+    .section-loading {
+      display: grid;
+      place-items: center;
+      min-height: 8rem;
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .table-section-loading {
+      min-height: 6rem;
+      margin-bottom: var(--space-3);
+    }
+
+    #focal-chart {
+      width: 100%;
+    }
+
+    .table-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .table-meta {
+      margin: 0;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      margin: 0 calc(-1 * var(--space-2));
+      padding: 0 var(--space-2);
+      border-radius: var(--radius-sm);
+    }
+
+    .data-grid {
+      --grid-template: repeat(auto-fit, minmax(7rem, 1fr));
+      display: grid;
+      grid-template-columns: var(--grid-template);
+      min-width: min(100%, max-content);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      font-size: var(--font-size-sm);
+      background: var(--color-surface);
+    }
+
+    .data-grid-header,
+    .data-grid-body {
+      display: contents;
+    }
+
+  /* :global() required — rows/cells are injected client-side and miss Astro scope attrs */
+    .data-grid :global(.grid-row) {
+      display: contents;
+    }
+
+    .data-grid :global(.grid-cell) {
+      padding: var(--space-2) var(--space-3);
+      text-align: left;
+      border-right: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--color-text);
+    }
+
+    /* Right border on last column of each row */
+    .data-grid :global(.grid-row > .grid-cell:last-child) {
+      border-right: none;
+    }
+
+    .data-grid :global(.grid-header) {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-dim);
+      background: var(--color-surface-raised);
+      box-shadow: 0 1px 0 var(--color-border);
+    }
+
+    .data-grid :global(.grid-cell.col-numeric) {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+    }
+
+    .data-grid :global(.grid-header.col-numeric) {
+      font-family: var(--font-sans);
+      font-size: var(--font-size-xs);
+    }
+
+    .data-grid :global(.grid-row.row-even .grid-cell) {
+      background: rgba(237, 244, 247, 0.55);
+    }
+
+    .data-grid :global(.grid-row.row-odd .grid-cell) {
+      background: var(--color-surface);
+    }
+
+    .data-grid :global(.grid-row:hover .grid-cell) {
+      background: rgba(21, 94, 117, 0.07);
+    }
+
+    /* Bottom border on last row */
+    .data-grid :global(.data-grid-body > .grid-row:last-child .grid-cell) {
+      border-bottom: none;
+    }
+
+    .source-grid {
+      list-style: none;
+      padding: 0;
+      margin: var(--space-5) 0 0;
+      display: grid;
+      gap: var(--space-3);
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+
+    .source-card {
+      margin: 0;
+    }
+
+    .source-card a {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 600;
+      line-height: var(--line-height-normal);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .source-card a:hover {
+      border-color: var(--color-border-highlight);
+      box-shadow: var(--shadow-sm);
+      color: var(--color-secondary);
+      text-decoration: none;
+    }
+
+    .source-card-title {
+      flex: 1;
+      font-size: var(--font-size-sm);
+    }
+
+    .demo-badge {
+      flex-shrink: 0;
+      padding: 0.15em 0.5em;
+      background: var(--color-primary-glow);
+      color: var(--color-primary);
+      border-radius: 999px;
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .reference-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-raised);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .reference-summary {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--color-secondary);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .reference-summary::before {
+      content: '▸';
+      transition: transform 0.15s;
+    }
+
+    details[open] .reference-summary::before {
+      transform: rotate(90deg);
+    }
+
+    .reference-body {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .reference-links {
+      margin: 0 0 var(--space-3);
+      padding-left: var(--space-5);
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .reference-links li {
+      font-size: var(--font-size-sm);
       color: var(--color-text-muted);
       line-height: var(--line-height-relaxed);
     }
 
-    .detail-grid {
-      display: grid;
-      gap: var(--space-4);
-      grid-template-columns: 1fr;
+    .reference-links a {
+      color: var(--color-secondary);
+      font-weight: 600;
     }
 
-    @media (min-width: 768px) {
-      .detail-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
+    .reference-hint {
+      margin: 0;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-dim);
+      line-height: var(--line-height-relaxed);
     }
 
-    .intro {
-      color: var(--color-text-muted);
-      max-width: 65ch;
-    }
-
-    .empty-state {
-      border: 1px solid var(--color-border);
+    .reference-hint code {
+      font-family: var(--font-mono);
       background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      padding: var(--space-6);
-    }
-
-    .empty-state p {
-      margin: 0;
-      color: var(--color-text-muted);
-    }
-
-    .preview-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-6);
-    }
-
-    @media (min-width: 768px) {
-      .preview-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .preview-card {
+      padding: 0.1em 0.35em;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--color-border);
-      background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      padding: var(--space-6);
-      box-shadow: var(--shadow-sm);
-      display: grid;
-      gap: var(--space-4);
-      align-content: start;
-    }
-
-    .preview-card h2 {
-      margin: 0;
-      font-size: var(--font-size-xl);
-    }
-
-    .preview-card p {
-      margin: 0;
-    }
-
-    .meta {
-      color: var(--color-text-muted);
-      font-size: var(--font-size-sm);
-    }
-
-    .preview-card .button {
-      justify-self: start;
     }
   </style>
 </Layout>

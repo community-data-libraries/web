@@ -58,3 +58,8 @@ coverage/
 tmp/
 temp/
 *.tmp
+
+# Backend mirror artifacts
+backend/pythonscripts/__pycache__/
+backend/database/*.db
+.venv/

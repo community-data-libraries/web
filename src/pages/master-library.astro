@@ -18,8 +18,7 @@ const targetPath = withBasePath('/complete-catalog');
       <a href={targetPath}>Complete Catalog</a>...
     </p>
     <script is:inline>
-      const target = `${targetPath}${window.location.search}`;
-      window.location.replace(target);
+      window.location.replace('{targetPath}' + window.location.search);
     </script>
   </body>
 </html>
