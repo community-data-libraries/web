@@ -100,6 +100,7 @@ const server = http.createServer(async (req, res) => {
       if (parsed.action === "chart") {
         const options = {
           variable: url.searchParams.get("variable") ?? undefined,
+          xVariable: url.searchParams.get("xVariable") ?? undefined,
           state: url.searchParams.get("state") ?? undefined,
           county: url.searchParams.get("county") ?? undefined,
           limit: Number(url.searchParams.get("limit") ?? 50),

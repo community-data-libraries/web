@@ -38,9 +38,9 @@ function selectPreviewColumns(source, headers, overrideColumns) {
 
   const variables = source.variables ?? [];
   const selected = variables.filter((v) => headers.includes(v));
-  if (selected.length > 0) return selected.slice(0, 8);
+  if (selected.length > 0) return selected;
 
-  return headers.slice(0, 8);
+  return headers;
 }
 
 function matchesFilter(rowObj, col, filterValue) {
@@ -137,8 +137,10 @@ export async function buildPreview(source, options = {}) {
   };
 }
 
+const TEMPORAL_COLUMNS = ["YEAR", "DATE", "PERIOD", "TIMEPERIOD_NAME"];
+
 export async function buildChart(source, options = {}) {
-  const { variable, state, county, limit = 50 } = options;
+  const { variable, state, county, limit = 50, xVariable } = options;
   const { headers, rows } = await getSourceTable(source);
 
   const focalVariable = variable || defaultFocalVariable(source, headers);
@@ -147,27 +149,53 @@ export async function buildChart(source, options = {}) {
   }
 
   const filtered = filterRows(headers, rows, { state, county });
-  const labelCol =
-    findColumn(headers, GEO_COLUMNS.countyName) ||
-    findColumn(headers, GEO_COLUMNS.stateName) ||
-    findColumn(headers, GEO_COLUMNS.county) ||
-    headers[0];
 
-  const series = [];
+  // Determine X-axis column
+  let xCol;
+  if (xVariable && headers.includes(xVariable)) {
+    xCol = xVariable;
+  } else {
+    // Auto-detect: try temporal columns first, then fall back to headers[0]
+    xCol = findColumn(headers, TEMPORAL_COLUMNS) || headers[0];
+  }
+
+  // Group rows by X value, accumulating Y values for averaging
+  const xGroups = new Map(); // xKey -> { sum, count }
   for (const row of filtered) {
     const obj = rowToObject(headers, row);
     const value = parseNumeric(obj[focalVariable]);
     if (value === null) continue;
-    const label = String(obj[labelCol] ?? `Row ${series.length + 1}`).trim();
-    series.push({ label, value });
-    if (series.length >= limit) break;
+    const xKey = String(obj[xCol] ?? "").trim();
+    if (!xGroups.has(xKey)) {
+      xGroups.set(xKey, { sum: 0, count: 0 });
+    }
+    const entry = xGroups.get(xKey);
+    entry.sum += value;
+    entry.count += 1;
   }
 
-  series.sort((a, b) => b.value - a.value);
+  // Build series from groups
+  let series = [];
+  for (const [xKey, { sum, count }] of xGroups) {
+    series.push({ label: xKey, value: sum / count });
+  }
+
+  // Sort: numeric if all X labels are numeric strings, else lexicographic
+  const allNumeric = series.every((p) => Number.isFinite(Number(p.label)));
+  if (allNumeric) {
+    series.sort((a, b) => Number(a.label) - Number(b.label));
+  } else {
+    series.sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  // Apply limit after sorting
+  if (series.length > limit) series = series.slice(0, limit);
 
   return {
     variable: focalVariable,
     label: focalVariable.replace(/_/g, " "),
+    xVariable: xCol,
+    xLabel: xCol.replace(/_/g, " "),
     series,
   };
 }

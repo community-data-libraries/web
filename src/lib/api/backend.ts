@@ -90,6 +90,8 @@ export interface ChartResponse {
   variable: string;
   label: string;
   series: ChartSeriesPoint[];
+  xVariable?: string;
+  xLabel?: string;
 }
 
 export interface FilterOption {
@@ -160,10 +162,11 @@ export async function fetchPreview(id: string, params: PreviewParams = {}): Prom
 
 export async function fetchChart(
   id: string,
-  params: { variable?: string; state?: string; county?: string; limit?: number } = {},
+  params: { variable?: string; xVariable?: string; state?: string; county?: string; limit?: number } = {},
 ): Promise<ChartResponse> {
   const search = new URLSearchParams();
   if (params.variable) search.set('variable', params.variable);
+  if (params.xVariable) search.set('xVariable', params.xVariable);
   if (params.state) search.set('state', params.state);
   if (params.county) search.set('county', params.county);
   if (params.limit != null) search.set('limit', String(params.limit));

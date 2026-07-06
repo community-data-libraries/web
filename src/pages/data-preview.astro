@@ -106,12 +106,22 @@ const catalogHref = withBasePath('/complete-catalog');
                   <option value="">All counties</option>
                 </select>
               </label>
+              <label class="filter-control" id="x-variable-filter-wrap">
+                <span>X Variable</span>
+                <select id="x-variable-filter"></select>
+              </label>
               <label class="filter-control">
                 <span>Variable</span>
                 <select id="variable-filter"></select>
               </label>
             </div>
           </div>
+          <details class="reference-card" id="reference-card" hidden>
+            <summary class="reference-summary">Reference &amp; Guidance</summary>
+            <div class="reference-body" id="reference-body">
+              <!-- filled by JS -->
+            </div>
+          </details>
           <div class="chart-canvas-wrap">
             <div id="chart-loading" class="section-loading" hidden>Loading chart…</div>
             <div id="focal-chart" aria-label="Focal variable chart"></div>
@@ -169,6 +179,7 @@ const catalogHref = withBasePath('/complete-catalog');
     const stateFilter = document.getElementById('state-filter') as HTMLSelectElement;
     const countyFilter = document.getElementById('county-filter') as HTMLSelectElement;
     const variableFilter = document.getElementById('variable-filter') as HTMLSelectElement;
+    const xVariableFilter = document.getElementById('x-variable-filter') as HTMLSelectElement;
     const stateFilterWrap = document.getElementById('state-filter-wrap');
     const countyFilterWrap = document.getElementById('county-filter-wrap');
 
@@ -177,8 +188,7 @@ const catalogHref = withBasePath('/complete-catalog');
     function pickPreviewColumns(source) {
       const skip = new Set(['SUMLEV', 'REGION', 'DIVISION']);
       const vars = (source.variables ?? []).filter((v) => !skip.has(v));
-      const selected = vars.length > 0 ? vars : (source.variables ?? []);
-      return selected.slice(0, 6).join(',');
+      return (vars.length > 0 ? vars : (source.variables ?? [])).join(',');
     }
 
     function pickFocalVariable(source) {
@@ -229,6 +239,9 @@ const catalogHref = withBasePath('/complete-catalog');
         chip.className = `tag-chip ${filledFirst && i === 0 ? 'tag-filled' : 'tag-outline'}`;
         chip.textContent = tag;
         container.appendChild(chip);
+        if (i < tags.length - 1) {
+          container.appendChild(document.createTextNode(', '));
+        }
       });
     }
 
@@ -259,9 +272,13 @@ const catalogHref = withBasePath('/complete-catalog');
       const labels = chartData.series.map((p) => p.label);
       const values = chartData.series.map((p) => p.value);
 
+      const isLineChart =
+        chartData.xVariable != null && labels.every((l) => !isNaN(Number(l)));
+      const chartType = isLineChart ? 'line' : 'bar';
+
       chartInstance = new Apex(container, {
         chart: {
-          type: 'bar',
+          type: chartType,
           height: 300,
           toolbar: { show: false },
           fontFamily: 'Outfit, sans-serif',
@@ -281,7 +298,13 @@ const catalogHref = withBasePath('/complete-catalog');
         yaxis: {
           labels: {
             style: { colors: '#52606D', fontSize: '11px' },
-            formatter: (v) => (Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : String(v)),
+            formatter: (v) => {
+              const n = Number(v);
+              if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
+              if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+              if (Math.abs(n) >= 1e3) return `${(n / 1e3).toFixed(0)}k`;
+              return String(n);
+            },
           },
         },
         colors: ['#155E75'],
@@ -386,6 +409,7 @@ const catalogHref = withBasePath('/complete-catalog');
       const state = stateFilter?.value || undefined;
       const county = countyFilter?.value || undefined;
       const variable = variableFilter?.value || focalVariable;
+      const xVariable = xVariableFilter?.value || undefined;
 
       setSectionLoading(true, true);
       try {
@@ -396,7 +420,7 @@ const catalogHref = withBasePath('/complete-catalog');
             limit: 25,
             columns: previewColumns || undefined,
           }),
-          fetchChart(sourceId, { state, county, variable, limit: 15 }),
+          fetchChart(sourceId, { state, county, variable, xVariable, limit: 15 }),
         ]);
 
         renderTable(preview);
@@ -404,6 +428,25 @@ const catalogHref = withBasePath('/complete-catalog');
       } finally {
         setSectionLoading(false, false);
       }
+    }
+
+    function populateReferenceCard(source) {
+      const card = document.getElementById('reference-card');
+      const body = document.getElementById('reference-body');
+      if (!card || !body) return;
+      const geoTags = getGeographicTags(source);
+      const hasFips = geoTags.includes('state') || geoTags.includes('county');
+      if (!hasFips) return;
+      card.removeAttribute('hidden');
+      body.innerHTML = `
+        <ul class="reference-links">
+          <li><a href="https://www.census.gov/library/reference/code-lists/ansi/ansi-codes-for-states.html" target="_blank" rel="noopener noreferrer">State FIPS Codes (Census.gov)</a> — two-digit numeric codes used for each U.S. state/territory</li>
+          <li><a href="https://www.census.gov/library/reference/code-lists/ansi.html" target="_blank" rel="noopener noreferrer">County FIPS Codes (Census.gov)</a> — five-digit codes (state + county)</li>
+          <li><a href="https://www.nrcs.usda.gov/wps/portal/nrcs/detail/?cid=nrcs143_013696" target="_blank" rel="noopener noreferrer">USDA State/County Codes</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code" target="_blank" rel="noopener noreferrer">FIPS overview (Wikipedia)</a></li>
+        </ul>
+        <p class="reference-hint">Tip: use the two-digit state FIPS code (e.g., <code>47</code> for Tennessee, <code>06</code> for California) in the State filter above.</p>
+      `;
     }
 
     async function initSourcePicker() {
@@ -517,6 +560,34 @@ const catalogHref = withBasePath('/complete-catalog');
           .join('');
       }
 
+      if (xVariableFilter) {
+        const report = source.variable_report ?? [];
+        const allCols = source.variables ?? [];
+        // Non-numeric (label/time) columns first, then numeric
+        const nonNumeric = report
+          .filter((v) => v.type !== 'integer' && v.type !== 'float')
+          .map((v) => v.name)
+          .filter((n) => allCols.includes(n));
+        const numeric = report
+          .filter((v) => v.type === 'integer' || v.type === 'float')
+          .map((v) => v.name)
+          .filter((n) => allCols.includes(n));
+        const ordered = [...new Set([...nonNumeric, ...numeric, ...allCols])];
+        const xOptions = ordered.length > 0 ? ordered : allCols;
+        // Auto-detect default X: first temporal column or first column
+        const temporalNames = ['YEAR', 'DATE', 'PERIOD', 'TIMEPERIOD_NAME'];
+        const defaultX =
+          xOptions.find((v) => temporalNames.includes(v.toUpperCase())) ?? xOptions[0] ?? '';
+        xVariableFilter.innerHTML = xOptions
+          .map(
+            (v) =>
+              `<option value="${v}" ${v === defaultX ? 'selected' : ''}>${v.replace(/_/g, ' ')}</option>`,
+          )
+          .join('');
+      }
+
+      populateReferenceCard(source);
+
       await refreshPreviewAndChart();
 
       stateFilter?.addEventListener('change', async () => {
@@ -526,6 +597,7 @@ const catalogHref = withBasePath('/complete-catalog');
       });
       countyFilter?.addEventListener('change', refreshPreviewAndChart);
       variableFilter?.addEventListener('change', refreshPreviewAndChart);
+      xVariableFilter?.addEventListener('change', refreshPreviewAndChart);
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -1139,6 +1211,75 @@ const catalogHref = withBasePath('/complete-catalog');
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+    }
+
+    .reference-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-raised);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .reference-summary {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--color-secondary);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .reference-summary::before {
+      content: '▸';
+      transition: transform 0.15s;
+    }
+
+    details[open] .reference-summary::before {
+      transform: rotate(90deg);
+    }
+
+    .reference-body {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .reference-links {
+      margin: 0 0 var(--space-3);
+      padding-left: var(--space-5);
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .reference-links li {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .reference-links a {
+      color: var(--color-secondary);
+      font-weight: 600;
+    }
+
+    .reference-hint {
+      margin: 0;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-dim);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .reference-hint code {
+      font-family: var(--font-mono);
+      background: var(--color-surface);
+      padding: 0.1em 0.35em;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
     }
   </style>
 </Layout>
