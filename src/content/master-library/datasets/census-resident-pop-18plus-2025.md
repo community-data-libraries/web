@@ -1,6 +1,6 @@
 ---
 title: "Estimates of the Total Resident Population and Resident Population Age 18 Years and Older for the United States, Regions, States, District of Columbia, and Puerto Rico - July 1 2025"
-description: "Estimates of the Total Resident Population and Resident Population Age 18 Years and Older for the United States, Regions, States, District of Columbia, and Puerto Rico - July 1 2025 from U.S. Census Bureau (U.S. Department of Commerce). Topics include Business & Finance, Children & Families, Economy, Election, Energy & Environment, and more. Data is available for direct download."
+description: "Estimates of the Total Resident Population and Resident Population Age 18 Years and Older for the United States, Regions, States, District of Columbia, and Puerto Rico - July 1 2025 from U.S. Census Bureau (U.S. Department of Commerce). Topics include Business & Finance, Children & Families, Economy, Election, PreK-12 Education, and more. Data is available for direct download."
 author: "U.S. Census Bureau"
 sourceId: "census-resident-pop-18plus-2025"
 category: "dataset"
@@ -13,29 +13,31 @@ tags:
   - "children-families"
   - "economy"
   - "election"
+  - "prek-12-education"
   - "energy-environment"
   - "government-administration"
   - "health-social-services"
   - "housing-buildings"
   - "labor-workforce-development"
   - "population-data"
-  - "prek-12-education"
-  - "transportation"
 dataThemes:
   - "business-finance"
   - "children-families"
   - "economy"
   - "election"
+  - "prek-12-education"
   - "energy-environment"
   - "government-administration"
   - "health-social-services"
   - "housing-buildings"
   - "labor-workforce-development"
   - "population-data"
-  - "prek-12-education"
-  - "transportation"
 pedagogicalTags:
-  - data-literacy
+  - "has categorical variable"
+  - "meets minimum sample size"
+  - "large enough for clt"
+  - "medium dataset"
+  - "single digit values"
 audienceAccess:
   teacher: true
   student: true

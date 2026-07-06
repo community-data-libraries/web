@@ -1,6 +1,6 @@
 ---
 title: "State-Level eBird Data Summaries"
-description: "State-Level eBird Data Summaries from Cornell Lab of Ornithology. Topics include Government Administration. Download link for species-level summaries is available underneath the state selection."
+description: "State-Level eBird Data Summaries from Cornell Lab of Ornithology. Download link for species-level summaries is available underneath the state selection."
 author: "Cornell Lab of Ornithology"
 sourceId: "ebird-state-summaries"
 category: "dataset"
@@ -9,9 +9,8 @@ tags:
   - "dataset"
   - "government-data"
   - "state"
-  - "government-administration"
 dataThemes:
-  - "government-administration"
+  - general
 pedagogicalTags:
   - data-literacy
 audienceAccess:

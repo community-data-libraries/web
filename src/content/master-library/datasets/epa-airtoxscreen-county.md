@@ -1,6 +1,6 @@
 ---
 title: "AirToxScreen Emissions by County"
-description: "AirToxScreen Emissions by County from U.S. Environmental Protection Agency (EPA). Topics include Energy & Environment, Government Administration, Population Data. Data is available for direct download."
+description: "AirToxScreen Emissions by County from U.S. Environmental Protection Agency (EPA). Topics include Energy & Environment, Government Administration. Data is available for direct download."
 author: "U.S. Environmental Protection Agency (EPA)"
 sourceId: "epa-airtoxscreen-county"
 category: "dataset"
@@ -11,11 +11,9 @@ tags:
   - "county"
   - "energy-environment"
   - "government-administration"
-  - "population-data"
 dataThemes:
   - "energy-environment"
   - "government-administration"
-  - "population-data"
 pedagogicalTags:
   - data-literacy
 audienceAccess:

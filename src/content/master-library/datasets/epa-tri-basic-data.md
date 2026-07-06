@@ -16,7 +16,6 @@ tags:
   - "government-administration"
   - "health-social-services"
   - "law-public-safety"
-  - "population-data"
 dataThemes:
   - "business-finance"
   - "children-families"
@@ -24,7 +23,6 @@ dataThemes:
   - "government-administration"
   - "health-social-services"
   - "law-public-safety"
-  - "population-data"
 pedagogicalTags:
   - data-literacy
 audienceAccess:

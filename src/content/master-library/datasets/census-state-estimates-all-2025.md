@@ -21,7 +21,14 @@ dataThemes:
   - "housing-buildings"
   - "population-data"
 pedagogicalTags:
-  - data-literacy
+  - "positive correlation"
+  - "negative correlation"
+  - "strong correlation"
+  - "moderate correlation"
+  - "weak correlation"
+  - "linear relationship"
+  - "nonlinear relationship"
+  - "curved relationship"
 audienceAccess:
   teacher: true
   student: true

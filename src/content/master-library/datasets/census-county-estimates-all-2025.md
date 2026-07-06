@@ -1,6 +1,6 @@
 ---
 title: "County Estimates All Data 2025"
-description: "County Estimates All Data 2025 from U.S. Census Bureau (U.S. Department of Commerce). Topics include Economy, Energy & Environment, Government Administration, Housing & Buildings, Population Data. Data is available for direct download. SUMLEV: summary level (40 = state, 50 = county). NPOPCHG: net population change. NATURALCHG: births minus deaths. GQESTIMATES: population in group quarters (prisons, dorms, nursing homes, etc.). RB..."
+description: "County Estimates All Data 2025 from U.S. Census Bureau (U.S. Department of Commerce). Topics include Energy & Environment, Population Data. Data is available for direct download. SUMLEV: summary level (40 = state, 50 = county). NPOPCHG: net population change. NATURALCHG: births minus deaths. GQESTIMATES: population in group quarters (prisons, dorms, nursing homes, etc.). RB..."
 author: "U.S. Census Bureau"
 sourceId: "census-county-estimates-all-2025"
 category: "dataset"
@@ -9,16 +9,10 @@ tags:
   - "dataset"
   - "government-data"
   - "commerce"
-  - "economy"
   - "energy-environment"
-  - "government-administration"
-  - "housing-buildings"
   - "population-data"
 dataThemes:
-  - "economy"
   - "energy-environment"
-  - "government-administration"
-  - "housing-buildings"
   - "population-data"
 pedagogicalTags:
   - data-literacy

@@ -1,6 +1,6 @@
 ---
 title: "National FBI Crime Data Explorer"
-description: "National FBI Crime Data Explorer from Federal Bureau of Investigation (FBI) (U.S. Department of Justice). Topics include Energy & Environment, Government Administration, Law & Public Safety. Download links to multiple types of data available after selecting filters. Each variable is available for download separately."
+description: "National FBI Crime Data Explorer from Federal Bureau of Investigation (FBI) (U.S. Department of Justice). Topics include Energy & Environment, Law & Public Safety. Download links to multiple types of data available after selecting filters. Each variable is available for download separately."
 author: "Federal Bureau of Investigation (FBI)"
 sourceId: "fbi-crime-data-explorer"
 category: "dataset"
@@ -12,11 +12,9 @@ tags:
   - "state"
   - "year"
   - "energy-environment"
-  - "government-administration"
   - "law-public-safety"
 dataThemes:
   - "energy-environment"
-  - "government-administration"
   - "law-public-safety"
 pedagogicalTags:
   - data-literacy

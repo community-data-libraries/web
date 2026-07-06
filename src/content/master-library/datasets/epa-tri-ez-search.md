@@ -1,6 +1,6 @@
 ---
 title: "Toxics Release Inventory EZ Search"
-description: "Toxics Release Inventory EZ Search from U.S. Environmental Protection Agency (EPA). Topics include Energy & Environment, Government Administration, Population Data. After selecting topic, variables, and location filters the website will provide a link to download the dataset."
+description: "Toxics Release Inventory EZ Search from U.S. Environmental Protection Agency (EPA). Topics include Energy & Environment, Government Administration. After selecting topic, variables, and location filters the website will provide a link to download the dataset."
 author: "U.S. Environmental Protection Agency (EPA)"
 sourceId: "epa-tri-ez-search"
 category: "dataset"
@@ -13,11 +13,9 @@ tags:
   - "year"
   - "energy-environment"
   - "government-administration"
-  - "population-data"
 dataThemes:
   - "energy-environment"
   - "government-administration"
-  - "population-data"
 pedagogicalTags:
   - data-literacy
 audienceAccess:

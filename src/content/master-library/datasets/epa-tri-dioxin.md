@@ -1,6 +1,6 @@
 ---
 title: "TRI Dioxin and Dioxin-like Compounds and TEQ Data Files: 2008-Present"
-description: "TRI Dioxin and Dioxin-like Compounds and TEQ Data Files: 2008-Present from U.S. Environmental Protection Agency (EPA). Topics include Energy & Environment, Government Administration, Population Data. Download link will be provided after selecting year."
+description: "TRI Dioxin and Dioxin-like Compounds and TEQ Data Files: 2008-Present from U.S. Environmental Protection Agency (EPA). Topics include Energy & Environment, Government Administration. Download link will be provided after selecting year."
 author: "U.S. Environmental Protection Agency (EPA)"
 sourceId: "epa-tri-dioxin"
 category: "dataset"
@@ -11,11 +11,9 @@ tags:
   - "year"
   - "energy-environment"
   - "government-administration"
-  - "population-data"
 dataThemes:
   - "energy-environment"
   - "government-administration"
-  - "population-data"
 pedagogicalTags:
   - data-literacy
 audienceAccess:

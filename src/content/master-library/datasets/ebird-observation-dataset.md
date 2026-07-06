@@ -1,6 +1,6 @@
 ---
 title: "eBird Observation Dataset"
-description: "eBird Observation Dataset from Cornell Lab of Ornithology. Topics include Population Data. A free provider account is required to download the full dataset."
+description: "eBird Observation Dataset from Cornell Lab of Ornithology. A free provider account is required to download the full dataset."
 author: "Cornell Lab of Ornithology"
 sourceId: "ebird-observation-dataset"
 category: "dataset"
@@ -12,9 +12,8 @@ tags:
   - "county"
   - "year"
   - "account-required"
-  - "population-data"
 dataThemes:
-  - "population-data"
+  - general
 pedagogicalTags:
   - data-literacy
 audienceAccess:
