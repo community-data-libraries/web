@@ -11,6 +11,49 @@ const defaultAudienceAccess = {
 };
 
 const restrictedKeywords = ['opioid', 'drug', 'addiction'];
+const excludedPedagogicalTags = new Set(['year']);
+
+const geographicTagPattern =
+  /(^|[-_\s])(county|state|city|zip|zipcode|fips|tract|district|region|local|community|tribal|national)($|[-_\s])/i;
+
+const forcedUppercaseWords = new Set(['fips', 'zip', 'usa', 'us']);
+
+function toTitleCaseTag(value: string): string {
+  const words = value
+    .trim()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .filter(Boolean);
+
+  return words
+    .map((word) => {
+      const lower = word.toLowerCase();
+      if (forcedUppercaseWords.has(lower)) {
+        return lower.toUpperCase();
+      }
+      return `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
+    })
+    .join(' ');
+}
+
+export function sanitizePedagogicalTags(tags: string[]): string[] {
+  return tags
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0)
+    .filter((tag) => !excludedPedagogicalTags.has(tag.toLowerCase()));
+}
+
+export function formatTagLabel(tag: string): string {
+  return toTitleCaseTag(tag);
+}
+
+export function formatGeographicTagLabel(tag: string): string {
+  const trimmed = tag.trim();
+  if (trimmed.length === 0) return trimmed;
+  if (!geographicTagPattern.test(trimmed)) return trimmed;
+  return toTitleCaseTag(trimmed);
+}
 
 export function canAudienceAccess(entry: MasterLibraryEntry, audience: AudienceRole): boolean {
   const access = entry.data.audienceAccess ?? defaultAudienceAccess;
@@ -51,7 +94,8 @@ export function extractThemes(entries: MasterLibraryEntry[], audience: AudienceR
 }
 
 export function extractPedagogicalTags(entries: MasterLibraryEntry[]): string[] {
+  const cleaned = entries.flatMap((entry) => sanitizePedagogicalTags(entry.data.pedagogicalTags));
   return Array.from(
-    new Set(entries.flatMap((entry) => entry.data.pedagogicalTags)),
+    new Set(cleaned),
   ).sort((left, right) => left.localeCompare(right));
 }

@@ -1,7 +1,7 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { extractPedagogicalTags, extractThemes } from '@lib/data/libraryAccess';
+import { extractPedagogicalTags, extractThemes, formatTagLabel } from '@lib/data/libraryAccess';
 import { withBasePath } from '@lib/paths';
 
 const resources = await getCollection('master-library');
@@ -50,7 +50,7 @@ const pedagogicalTags = extractPedagogicalTags(resources);
         {pedagogicalTags.length > 0 ? (
           <ul>
             {pedagogicalTags.map((tag) => (
-              <li>{tag}</li>
+              <li>{formatTagLabel(tag)}</li>
             ))}
           </ul>
         ) : (

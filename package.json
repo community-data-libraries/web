@@ -9,6 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "instantiate:community-libraries": "node scripts/instantiate-community-libraries.mjs",
     "validate:geo": "node scripts/validate-geojson.mjs",
     "validate:schema": "node scripts/validate-geojson.mjs",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx,.astro",

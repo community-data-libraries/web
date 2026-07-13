@@ -1,6 +1,7 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { formatGeographicTagLabel, formatTagLabel, sanitizePedagogicalTags } from '@lib/data/libraryAccess';
 import { withBasePath } from '@lib/paths';
 
 const all = await getCollection('master-library');
@@ -31,15 +32,15 @@ const sourceAudience = (Astro.url.searchParams.get('audience') ?? '').trim();
         <div class="detail-grid">
           <div>
             <h3>Themes</h3>
-            <p>{selectedEntry.data.dataThemes.join(', ') || 'Not specified'}</p>
+            <p>{selectedEntry.data.dataThemes.map((tag) => formatGeographicTagLabel(tag)).join(', ') || 'Not specified'}</p>
           </div>
           <div>
             <h3>Tags</h3>
-            <p>{selectedEntry.data.tags.join(', ') || 'Not specified'}</p>
+            <p>{selectedEntry.data.tags.map((tag) => formatGeographicTagLabel(tag)).join(', ') || 'Not specified'}</p>
           </div>
           <div>
             <h3>Pedagogical Tags</h3>
-            <p>{selectedEntry.data.pedagogicalTags.join(', ') || 'Not specified'}</p>
+            <p>{sanitizePedagogicalTags(selectedEntry.data.pedagogicalTags).map((tag) => formatTagLabel(tag)).join(', ') || 'Not specified'}</p>
           </div>
         </div>
         {selectedEntry.data.url && (
@@ -59,7 +60,7 @@ const sourceAudience = (Astro.url.searchParams.get('audience') ?? '').trim();
             <h2>{item.data.title}</h2>
             <p>{item.data.description}</p>
             {item.data.tags && item.data.tags.length > 0 && (
-              <p class="meta">Tags: {item.data.tags.join(', ')}</p>
+              <p class="meta">Tags: {item.data.tags.map((tag) => formatGeographicTagLabel(tag)).join(', ')}</p>
             )}
             {item.data.url && (
               <a href={item.data.url} target="_blank" rel="noopener noreferrer" class="button">Visit</a>

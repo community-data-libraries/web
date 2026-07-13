@@ -1,0 +1,56 @@
+name: Community Library Instantiation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/content/community-library-requests/*.md
+      - scripts/instantiate-community-libraries.mjs
+      - .github/workflows/community-library-instantiation.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  instantiate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Instantiate approved community libraries
+        env:
+          CDL_GITHUB_TOKEN: ${{ secrets.CDL_GITHUB_TOKEN }}
+          CDL_GITHUB_OWNER: ${{ secrets.CDL_GITHUB_OWNER }}
+          CDL_TEMPLATE_REPO: ${{ secrets.CDL_TEMPLATE_REPO }}
+          CDL_NETLIFY_CREATE_SITE: ${{ secrets.CDL_NETLIFY_CREATE_SITE }}
+          CDL_NETLIFY_AUTH_TOKEN: ${{ secrets.CDL_NETLIFY_AUTH_TOKEN }}
+          CDL_NETLIFY_TEAM_ID: ${{ secrets.CDL_NETLIFY_TEAM_ID }}
+          CDL_NETLIFY_SITE_NAME_PREFIX: ${{ secrets.CDL_NETLIFY_SITE_NAME_PREFIX }}
+        run: npm run instantiate:community-libraries
+
+      - name: Commit request status updates
+        run: |
+          if git diff --quiet; then
+            echo "No request status changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/content/community-library-requests/*.md
+          git commit -m "chore: update community library provisioning status"
+          git push

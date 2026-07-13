@@ -10,44 +10,412 @@ public_folder: /web/uploads
 collections:
   - name: master-library
     label: Master Library
+    label_singular: Resource
+    description: >
+      Curated datasets, tools, guides, and papers for the CDL network.
+      Use descriptive geographic tags (e.g. knox-county, tennessee) so community libraries
+      can automatically surface the right resources for their area.
     folder: src/content/master-library
     create: true
     slug: '{{slug}}'
     extension: md
     format: frontmatter
     fields:
-      - { label: Title, name: title, widget: string }
-      - { label: Description, name: description, widget: text }
-      - { label: Author, name: author, widget: string, required: false }
-      - { label: Published Date, name: publishedDate, widget: datetime, required: false }
-      - {
-          label: Category,
-          name: category,
-          widget: select,
-          options: [dataset, tool, guide, paper],
-        }
-      - { label: Tags, name: tags, widget: list, required: false }
-      - { label: Data Themes, name: dataThemes, widget: list, required: false }
-      - { label: Pedagogical Tags, name: pedagogicalTags, widget: list, required: false }
-      - {
-          label: Audience Access,
-          name: audienceAccess,
-          widget: object,
-          fields:
-            - { label: Teacher, name: teacher, widget: boolean, default: true }
-            - { label: Student, name: student, widget: boolean, default: true }
-            - { label: Community, name: community, widget: boolean, default: true },
-        }
-      - { label: Sensitive, name: sensitive, widget: boolean, default: false }
-      - { label: URL, name: url, widget: string, required: false }
-      - { label: File URL, name: fileUrl, widget: string, required: false }
-      - {
-          label: Difficulty,
-          name: difficulty,
-          widget: select,
-          options: [beginner, intermediate, advanced],
-          required: false,
-        }
-      - { label: Language, name: language, widget: string, required: false }
-      - { label: Featured, name: featured, widget: boolean, default: false }
-      - { label: Body, name: body, widget: markdown }
+      - label: Title
+        name: title
+        widget: string
+        hint: "Clear, descriptive name. Example: 'Knox County Community Health Data'"
+
+      - label: Description
+        name: description
+        widget: text
+        hint: "1–3 sentences. What is this resource, who is it for, and what data does it contain?"
+
+      - label: Author / Source Organization
+        name: author
+        widget: string
+        required: false
+        hint: "Organization or person who created the resource. Example: 'U.S. Census Bureau'"
+
+      - label: Published / Last Updated Date
+        name: publishedDate
+        widget: datetime
+        required: false
+        hint: "When was this resource last updated or published?"
+
+      - label: Category
+        name: category
+        widget: select
+        hint: "Choose the type that best describes this resource."
+        options:
+          - { label: "Dataset — raw or processed data files", value: dataset }
+          - { label: "Tool — software, platform, or interactive app", value: tool }
+          - { label: "Guide — tutorial, how-to, or documentation", value: guide }
+          - { label: "Paper — research or policy document", value: paper }
+
+      - label: Geographic & Topic Tags
+        name: tags
+        widget: list
+        allow_add: true
+        hint: >
+          Add tags for the geographic areas and topics this resource covers.
+          Use lowercase hyphenated format: knox-county, tennessee, chicago, national, global.
+          Geographic tags are critical — they determine which community libraries include this resource.
+          Common geographic tags: knox-county · knoxville · tennessee · chicago · national · global
+        field: { label: Tag, name: tag, widget: string }
+
+      - label: Data Themes
+        name: dataThemes
+        widget: select
+        multiple: true
+        hint: "Select all data themes that apply. These drive theme filters in the catalog."
+        options:
+          - { label: "Public Health", value: public-health }
+          - { label: "Demographics", value: demographics }
+          - { label: "Inequality & Equity", value: inequality }
+          - { label: "Civic / Government", value: civic }
+          - { label: "Education", value: education }
+          - { label: "Environment", value: environment }
+          - { label: "Climate", value: climate }
+          - { label: "Economics", value: economics }
+          - { label: "Public Safety / Crime", value: public-safety }
+          - { label: "Infrastructure", value: infrastructure }
+          - { label: "Land Use / Planning", value: land-use }
+          - { label: "Transportation", value: transportation }
+          - { label: "Housing", value: housing }
+          - { label: "Politics / Elections", value: politics }
+          - { label: "Sports", value: sports }
+          - { label: "Journalism / Media", value: journalism }
+          - { label: "Geospatial / GIS", value: geospatial }
+          - { label: "Data Science Practice", value: data-science-practice }
+          - { label: "Data Visualization", value: visualization }
+          - { label: "Machine Learning / AI", value: machine-learning }
+          - { label: "Programming", value: programming }
+          - { label: "International Development", value: international-development }
+          - { label: "Urban Data", value: urban-data }
+
+      - label: Pedagogical Tags
+        name: pedagogicalTags
+        widget: select
+        multiple: true
+        hint: "Select the analysis-oriented tags generated by backend/pythonscripts. Description tags are generated separately by tagdataset.py."
+        options:
+          - { label: "Has Multiple Numeric Columns", value: has-multiple-numeric-columns }
+          - { label: "Has Categorical Variable", value: has-categorical-variable }
+          - { label: "Has Group Comparison Candidates", value: has-group-comparison-candidates }
+          - { label: "Meets Minimum Sample Size", value: meets-minimum-sample-size }
+          - { label: "Has Paired Test Candidates", value: has-paired-test-candidates }
+          - { label: "All Discrete", value: all-discrete }
+          - { label: "All Continuous", value: all-continuous }
+          - { label: "Mixed Types", value: mixed-types }
+          - { label: "Single Digit Values", value: single-digit-values }
+          - { label: "Double Digit Values", value: double-digit-values }
+          - { label: "Three Digit Values", value: three-digit-values }
+          - { label: "Large Scale Values", value: large-scale-values }
+          - { label: "Symmetric Distribution", value: symmetric-distribution }
+          - { label: "Right-Skewed Distribution", value: right-skewed-distribution }
+          - { label: "Left-Skewed Distribution", value: left-skewed-distribution }
+          - { label: "Approximately Normal", value: approximately-normal }
+          - { label: "Passes Normality Test", value: passes-normality-test }
+          - { label: "Fails Normality Test", value: fails-normality-test }
+          - { label: "Large Enough For CLT", value: large-enough-for-clt }
+          - { label: "Uniform Distribution", value: uniform-distribution }
+          - { label: "Bimodal Distribution", value: bimodal-distribution }
+          - { label: "High Variability", value: high-variability }
+          - { label: "Moderate Variability", value: moderate-variability }
+          - { label: "Low Variability", value: low-variability }
+          - { label: "Restricted Range", value: restricted-range }
+          - { label: "Wide Range", value: wide-range }
+          - { label: "Mean Median Similar", value: mean-median-similar }
+          - { label: "Mean Median Different", value: mean-median-different }
+          - { label: "Has Mode", value: has-mode }
+          - { label: "Contains Outliers", value: contains-outliers }
+          - { label: "No Outliers", value: no-outliers }
+          - { label: "Extreme Outliers", value: extreme-outliers }
+          - { label: "Positive Correlation", value: positive-correlation }
+          - { label: "Negative Correlation", value: negative-correlation }
+          - { label: "No Correlation", value: no-correlation }
+          - { label: "Strong Correlation", value: strong-correlation }
+          - { label: "Moderate Correlation", value: moderate-correlation }
+          - { label: "Weak Correlation", value: weak-correlation }
+          - { label: "Linear Relationship", value: linear-relationship }
+          - { label: "Nonlinear Relationship", value: nonlinear-relationship }
+          - { label: "Curved Relationship", value: curved-relationship }
+          - { label: "Exponential Pattern", value: exponential-pattern }
+          - { label: "Good Linear Fit", value: good-linear-fit }
+          - { label: "Moderate Linear Fit", value: moderate-linear-fit }
+          - { label: "Poor Linear Fit", value: poor-linear-fit }
+          - { label: "Has Influential Points", value: has-influential-points }
+          - { label: "Regression Appropriate", value: regression-appropriate }
+          - { label: "Two Groups Present", value: two-groups-present }
+          - { label: "Multiple Groups Present", value: multiple-groups-present }
+          - { label: "Groups Have Different Centers", value: groups-have-different-centers }
+          - { label: "Groups Have Different Spreads", value: groups-have-different-spreads }
+          - { label: "Groups Overlap Substantially", value: groups-overlap-substantially }
+          - { label: "Two-Way Table", value: two-way-table }
+          - { label: "Good For One-Way ANOVA", value: good-for-one-way-anova }
+          - { label: "Good For Two-Way ANOVA", value: good-for-two-way-anova }
+          - { label: "Good For Chi-Square GOF", value: good-for-chi-square-gof }
+          - { label: "Good For Chi-Square Independence", value: good-for-chi-square-independence }
+          - { label: "Good For Paired T-Test", value: good-for-paired-t-test }
+          - { label: "Good For One-Sample T-Test", value: good-for-one-sample-t-test }
+          - { label: "Good For One-Sample Z-Test", value: good-for-one-sample-z-test }
+          - { label: "Good For One-Proportion Z-Test", value: good-for-one-proportion-z-test }
+          - { label: "Good For Two-Sample T-Test", value: good-for-two-sample-t-test }
+          - { label: "Good For Two-Sample Z-Test", value: good-for-two-sample-z-test }
+          - { label: "Good For Two-Proportion Z-Test", value: good-for-two-proportion-z-test }
+          - { label: "Meets Equal Variance Assumption", value: meets-equal-variance-assumption }
+          - { label: "Violates Equal Variance Assumption", value: violates-equal-variance-assumption }
+          - { label: "Good For Transformation", value: good-for-transformation }
+
+      - label: Audience Access
+        name: audienceAccess
+        widget: object
+        hint: "Control which role groups can see this resource."
+        fields:
+          - { label: "Teachers can access", name: teacher, widget: boolean, default: true }
+          - label: "Students can access"
+            name: student
+            widget: boolean
+            default: true
+            hint: "Sensitive datasets are always hidden from students regardless of this setting."
+          - { label: "Community members can access", name: community, widget: boolean, default: true }
+
+      - label: Mark as Sensitive
+        name: sensitive
+        widget: boolean
+        default: false
+        hint: >
+          Flag resources containing sensitive data (e.g. opioid, drug, or addiction topics).
+          Sensitive resources are automatically hidden from the Student view.
+
+      - label: Resource URL
+        name: url
+        widget: string
+        required: false
+        hint: "Link to the resource's homepage or landing page."
+
+      - label: Direct Download URL
+        name: fileUrl
+        widget: string
+        required: false
+        hint: "Direct link to download the data file (CSV, GeoJSON, Excel, etc.), if available."
+
+      - label: Difficulty Level
+        name: difficulty
+        widget: select
+        required: false
+        hint: "How much technical skill does a user need to work with this resource?"
+        options:
+          - { label: "Beginner — no prior data experience needed", value: beginner }
+          - { label: "Intermediate — comfortable with spreadsheets or basic coding", value: intermediate }
+          - { label: "Advanced — requires coding or statistical background", value: advanced }
+
+      - label: Language
+        name: language
+        widget: string
+        required: false
+        default: "English"
+        hint: "Primary language of the resource."
+
+      - label: Featured
+        name: featured
+        widget: boolean
+        default: false
+        hint: "Featured resources are highlighted at the top of the catalog."
+
+      - label: Notes / Body
+        name: body
+        widget: markdown
+        required: false
+        hint: >
+          Optional markdown. Use this for usage tips, classroom context, what's included,
+          how to access the data, or any other notes for educators and community members.
+
+
+  - name: community-library-requests
+    label: Community Library Requests
+    label_singular: Community Library Request
+    description: >
+      Submit a request to provision a new community library — a filtered, locally-branded
+      view of the CDL master catalog for a specific geographic area.
+      Workflow: submit (pending) → CDL team reviews → approved → automated provisioning → provisioned.
+    folder: src/content/community-library-requests
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - label: Request ID
+        name: id
+        widget: string
+        required: true
+        hint: >
+          Unique identifier used in URLs and filenames. Lowercase letters, numbers, and hyphens only.
+          Example: knox-county-tn
+
+      - label: Library Title
+        name: title
+        widget: string
+        required: true
+        hint: "Display name for the community library. Example: 'Knox County Community Data Library'"
+
+      - label: Community Name
+        name: community_name
+        widget: string
+        required: true
+        hint: "Full name of the community this library serves. Example: 'Knox County, Tennessee'"
+
+      - label: Community Slug
+        name: community_slug
+        widget: string
+        required: true
+        hint: >
+          Short identifier used in the site URL and GitHub repo name.
+          Lowercase with hyphens. Example: knox-county-tn
+          → The library will be available at /community-library/knox-county-tn
+
+      - label: Contact Name
+        name: contact_name
+        widget: string
+        required: true
+        hint: "Full name of the person requesting this library."
+
+      - label: Contact Email
+        name: contact_email
+        widget: string
+        required: true
+        hint: "Email address for follow-up during the provisioning process."
+
+      - label: Repository Name (optional)
+        name: repository_name
+        widget: string
+        required: false
+        hint: >
+          GitHub repository name. If left blank, defaults to community-library-<community_slug>.
+
+      - label: Repository Description (optional)
+        name: repository_description
+        widget: text
+        required: false
+        hint: "Short description for the GitHub repository."
+
+      - label: "Geographic Tags — Which datasets should this library show?"
+        name: geographic_tags
+        widget: select
+        multiple: true
+        required: false
+        hint: >
+          Select the geographic tags that match this community.
+          The library will show master catalog entries that include ANY of these tags.
+          These must match the tags used in master library entries (see the Tags field there).
+          Don't see your area? Add a new geographic tag to master library entries first,
+          then it can be selected here.
+        options:
+          - { label: "Knox County, TN (tag: knox-county)", value: knox-county }
+          - { label: "Knoxville, TN (tag: knoxville)", value: knoxville }
+          - { label: "Tennessee — state-wide (tag: tennessee)", value: tennessee }
+          - { label: "Chicago, IL (tag: chicago)", value: chicago }
+          - { label: "National / US-wide (tag: national)", value: national }
+          - { label: "Local / community-level (tag: local)", value: local }
+          - { label: "Global (tag: global)", value: global }
+          - { label: "Government / public sector data (tag: government)", value: government }
+
+      - label: Geographic Filter UI Options
+        name: geographic_filters
+        widget: object
+        hint: >
+          Configure which geographic filter controls appear in the community library interface.
+          These let visitors narrow datasets to their specific county, ZIP, or school district.
+        fields:
+          - label: "Show State filter"
+            name: filter_state
+            widget: boolean
+            default: true
+            hint: "Adds a 'filter by state' control to the library interface."
+          - label: "Show County filter"
+            name: filter_county
+            widget: boolean
+            default: true
+            hint: "Adds a 'filter by county' control."
+          - label: "Show ZIP Code filter"
+            name: filter_zip_code
+            widget: boolean
+            default: true
+            hint: "Adds a 'filter by ZIP code' control."
+          - label: "Show School District filter"
+            name: filter_school_district
+            widget: boolean
+            default: false
+          - label: "Show Census Tract filter"
+            name: filter_tract
+            widget: boolean
+            default: false
+          - label: "Show FIPS Code filter"
+            name: filter_fips_code
+            widget: boolean
+            default: false
+          - label: "Default State"
+            name: default_state
+            widget: string
+            required: false
+            hint: "Two-letter abbreviation pre-selected in the state filter. Example: TN"
+          - label: "Default County FIPS"
+            name: default_county_fips
+            widget: string
+            required: false
+            hint: "5-digit FIPS code for the default county. Example: 47093 for Knox County, TN"
+          - label: "Default ZIP Code"
+            name: default_zip_code
+            widget: string
+            required: false
+            hint: "ZIP code pre-selected in the ZIP filter."
+          - label: "Default School District"
+            name: default_school_district
+            widget: string
+            required: false
+
+      - label: Implementation Notes
+        name: implementation_notes
+        widget: text
+        required: false
+        hint: >
+          Notes for the CDL provisioning team — custom data needs, branding preferences,
+          specific datasets to include, or any other context.
+
+      - label: Status
+        name: status
+        widget: select
+        default: pending
+        hint: "The CDL team updates this field as the request moves through the workflow."
+        options:
+          - { label: "Pending — awaiting review", value: pending }
+          - { label: "Approved — ready for provisioning", value: approved }
+          - { label: "Provisioned — library is live", value: provisioned }
+          - { label: "Failed — see error log below", value: failed }
+
+      - label: Provisioned Repository URL
+        name: provisioned_repo_url
+        widget: string
+        required: false
+        hint: "Filled in automatically once provisioning completes."
+
+      - label: Provisioned Site URL
+        name: provisioned_site_url
+        widget: string
+        required: false
+        hint: "Public URL of the live community library site."
+
+      - label: Error Log
+        name: last_error
+        widget: text
+        required: false
+        hint: "Error messages from failed provisioning attempts (set by the provisioning system)."
+
+      - label: Additional Context
+        name: body
+        widget: markdown
+        required: false
+        hint: >
+          Use this space to describe the community's data needs, goals, intended audience,
+          or any relevant background that would help the provisioning team.

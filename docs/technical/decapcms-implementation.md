@@ -41,3 +41,18 @@ DecapCMS works with or without Netlify, but on Netlify the typical path is `git-
   - `audienceAccess`
   - `sensitive`
 - Teacher view can include pedagogical tags; student/community views are theme-only and filtered.
+
+## Community Library Provisioning via Decap
+
+This repo now includes a second Decap collection:
+- `community-library-requests` in `src/content/community-library-requests`
+
+Provisioning flow:
+1. Create a request entry in Decap with geographic filter booleans.
+2. Keep status as `pending` during review.
+3. Change status to `approved` when ready to provision.
+4. GitHub Action `community-library-instantiation.yml` runs automation.
+5. Automation creates a new repo from the template and writes `config/community.yml`.
+6. Request entry is updated to `provisioned` (or `failed` with `last_error`).
+
+See `docs/technical/community-library-instantiation.md` for required secrets and environment configuration.

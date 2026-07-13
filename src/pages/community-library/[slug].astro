@@ -1,0 +1,500 @@
+---
+import CommunityLayout from '@layouts/CommunityLayout.astro';
+import { getCollection } from 'astro:content';
+import { canAudienceAccess, formatGeographicTagLabel, formatTagLabel, sanitizePedagogicalTags } from '@lib/data/libraryAccess';
+import { withBasePath } from '@lib/paths';
+
+export async function getStaticPaths() {
+  const requests = await getCollection('community-library-requests');
+  return requests.map((req) => ({
+    params: { slug: req.data.community_slug },
+    props: { request: req },
+  }));
+}
+
+const { request } = Astro.props;
+const { community_name, community_slug, geographic_tags, geographic_filters, title } = request.data;
+
+const allResources = await getCollection('master-library');
+
+// Filter by geographic tags: show entries that share at least one tag with the community
+const communityResources = geographic_tags.length > 0
+  ? allResources.filter(r => r.data.tags.some(tag => geographic_tags.includes(tag)))
+  : allResources;
+
+const sorted = [...communityResources].sort((a, b) => {
+  const at = a.data.publishedDate ? new Date(a.data.publishedDate).getTime() : 0;
+  const bt = b.data.publishedDate ? new Date(b.data.publishedDate).getTime() : 0;
+  return bt - at;
+});
+
+const datasetCount = communityResources.filter(r => r.data.category === 'dataset').length;
+const themeCount = new Set(communityResources.flatMap(r => r.data.dataThemes)).size;
+
+const base = `/community-library/${community_slug}`;
+
+function getAudiences(resource: (typeof allResources)[number]): string {
+  const audiences: string[] = [];
+  if (canAudienceAccess(resource, 'teacher'))   audiences.push('teacher');
+  if (canAudienceAccess(resource, 'student'))   audiences.push('student');
+  if (canAudienceAccess(resource, 'community')) audiences.push('community');
+  return audiences.join(' ');
+}
+
+function formatDate(date: Date | undefined): string {
+  if (!date) return '';
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+const defaultState = geographic_filters.default_state;
+const geoDisplay = defaultState
+  ? `${community_name} · ${defaultState}`
+  : community_name;
+---
+
+<CommunityLayout
+  title="Catalog"
+  description={`${title} — curated local datasets for teachers, students, and community members in ${community_name}.`}
+  communityName={title || community_name}
+  communityLocation={community_name}
+  communityBase={base}
+>
+  <!-- ── Hero ──────────────────────────────────── -->
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-text">
+      <div class="hero-kicker">{geoDisplay} · Open Data</div>
+      <h1 class="hero-title">
+        Local data, <em class="word-for">for</em><br/>
+        every learner.
+      </h1>
+      <p class="hero-body">
+        A curated catalog of open datasets about {community_name} — filtered and organized for
+        teachers, students, and community members.
+      </p>
+      <div class="hero-actions">
+        <a href="#catalog" class="btn-primary">
+          Explore the Catalog
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href={withBasePath('/submit')} class="btn-ghost">Submit a Dataset</a>
+      </div>
+    </div>
+
+    <div class="hero-stats" aria-hidden="true">
+      <div class="stat-card">
+        <span class="stat-n">{communityResources.length}</span>
+        <span class="stat-l">Resources</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-n">{datasetCount}</span>
+        <span class="stat-l">Datasets</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-n">{themeCount}</span>
+        <span class="stat-l">Themes</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-n">3</span>
+        <span class="stat-l">Audience Roles</span>
+      </div>
+    </div>
+  </section>
+
+  {geographic_tags.length > 0 && (
+    <div class="tag-info" role="note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Showing resources tagged with:
+      {geographic_tags.map(tag => <span class="geo-chip">{tag}</span>)}
+    </div>
+  )}
+
+  {communityResources.length === 0 && (
+    <div class="empty-hero">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <h2>No datasets tagged for this community yet</h2>
+      <p>
+        To add datasets to this library, open the <a href={withBasePath('/admin')}>Master Library in the CMS</a>
+        and add one of these geographic tags to the relevant entries:
+      </p>
+      <div class="tag-list">
+        {geographic_tags.map(tag => <code class="tag-code">{tag}</code>)}
+      </div>
+    </div>
+  )}
+
+  <!-- ── Role picker ────────────────────────── -->
+  {sorted.length > 0 && (
+    <section class="role-picker" aria-label="Choose your role">
+      <div class="role-grid">
+        <button class="role-card role-card-teacher active" data-audience="teacher" id="btn-teacher">
+          <div class="role-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <h3>Teacher</h3>
+          <p>Full catalog with pedagogical tags and classroom planning support.</p>
+        </button>
+        <button class="role-card role-card-student" data-audience="student" id="btn-student">
+          <div class="role-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <h3>Student</h3>
+          <p>Student-safe view with sensitive datasets removed.</p>
+        </button>
+        <button class="role-card role-card-community" data-audience="community" id="btn-community">
+          <div class="role-card-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Community Member</h3>
+          <p>Complete unfiltered catalog for local exploration.</p>
+        </button>
+      </div>
+    </section>
+  )}
+
+  <!-- ── Catalog ────────────────────────────── -->
+  {sorted.length > 0 && (
+    <section class="catalog" id="catalog" data-audience="teacher" aria-label={`${community_name} datasets`}>
+      <div class="catalog-header">
+        <h2 id="catalog-heading">{community_name} — Teacher View</h2>
+        <p id="catalog-count"><strong>{sorted.length}</strong> resources</p>
+      </div>
+
+      <div class="cards">
+        {sorted.map(resource => {
+          const themes = resource.data.dataThemes.length > 0
+            ? resource.data.dataThemes
+            : resource.data.tags.filter(t => !geographic_tags.includes(t) && t !== 'local' && t !== 'government');
+          const previewHref = withBasePath(`/data-preview?entry=${encodeURIComponent(resource.id)}&audience=AUDIENCE_PLACEHOLDER`);
+          const resourceAudiences = getAudiences(resource);
+          return (
+            <article class="dataset-card" data-audiences={resourceAudiences}>
+              <div class="card-body">
+                <div class="card-top">
+                  <span class={`cat-chip cat-${resource.data.category}`}>{resource.data.category}</span>
+                  {resource.data.difficulty && (
+                    <span class="diff-chip">{resource.data.difficulty}</span>
+                  )}
+                </div>
+                <h3><a href={previewHref} class="preview-link">{resource.data.title}</a></h3>
+                <p>{resource.data.description}</p>
+                <div class="chips">
+                  {themes.slice(0, 3).map(t => <span class="chip chip-theme">{formatGeographicTagLabel(t)}</span>)}
+                  {sanitizePedagogicalTags(resource.data.pedagogicalTags).slice(0, 2).map(t => (
+                    <span class="chip chip-pedagogical">{formatTagLabel(t)}</span>
+                  ))}
+                </div>
+                {resource.data.publishedDate && (
+                  <p class="meta">Updated {formatDate(resource.data.publishedDate)}</p>
+                )}
+              </div>
+              <div class="card-actions">
+                {resource.data.url && (
+                  <a href={resource.data.url} target="_blank" rel="noopener noreferrer" class="visit-btn">
+                    Visit source ↗
+                  </a>
+                )}
+                <a href={previewHref} class="preview-btn preview-link">Details</a>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
+  <!-- ── CTA ───────────────────────────────────── -->
+  <section class="cta-banner" aria-label="Contribute">
+    <div class="cta-text">
+      <p class="cta-eyebrow">Community-Driven</p>
+      <h2 class="cta-title">Know an open dataset about {community_name}?</h2>
+      <p class="cta-body">
+        Help expand the catalog by sharing openly available datasets.
+        Add the tag <code>{geographic_tags[0] ?? community_slug}</code> to your submission so it
+        appears in this community library.
+      </p>
+    </div>
+    <div class="cta-actions">
+      <a href={withBasePath('/submit')} class="btn-primary btn-large">Submit a Dataset →</a>
+    </div>
+  </section>
+</CommunityLayout>
+
+<script>
+  const catalog  = document.getElementById('catalog');
+  const heading  = document.getElementById('catalog-heading');
+  const countEl  = document.getElementById('catalog-count');
+  const roleBtns = document.querySelectorAll<HTMLElement>('.role-card[data-audience]');
+
+  // Community name injected via data attribute on catalog element
+  const communityName = catalog?.dataset.community ?? 'Community';
+  const headingLabels: Record<string, string> = {
+    teacher:   `${communityName} — Teacher View`,
+    student:   `${communityName} — Student View`,
+    community: `${communityName} — Community View`,
+  };
+
+  function applyAudience(audience: string) {
+    if (!catalog) return;
+    catalog.dataset.audience = audience;
+    roleBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.audience === audience));
+    if (heading) heading.textContent = headingLabels[audience] ?? headingLabels.community;
+    document.querySelectorAll<HTMLAnchorElement>('.preview-link').forEach(link => {
+      link.href = link.href.replace(/audience=[^&]+/, `audience=${audience}`);
+    });
+    if (countEl) {
+      let count = 0;
+      catalog.querySelectorAll<HTMLElement>('.dataset-card').forEach(card => {
+        if ((card.dataset.audiences ?? '').split(' ').includes(audience)) count++;
+      });
+      countEl.innerHTML = `<strong>${count}</strong> resources`;
+    }
+  }
+
+  roleBtns.forEach(btn => {
+    btn.addEventListener('click', () => applyAudience(btn.dataset.audience ?? 'community'));
+  });
+
+  const hash = location.hash.replace('#', '');
+  applyAudience(['teacher', 'student', 'community'].includes(hash) ? hash : 'teacher');
+</script>
+
+<style>
+  /* ── Hero ──────────────────────────────────── */
+  .hero {
+    display: grid; grid-template-columns: 1fr; gap: var(--space-10);
+    padding: var(--space-10) 0 var(--space-12); align-items: center;
+  }
+  @media (min-width: 900px) { .hero { grid-template-columns: 1fr auto; gap: var(--space-16); } }
+
+  .hero-text { display: grid; gap: var(--space-6); }
+
+  .hero-kicker {
+    font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 500;
+    color: var(--color-secondary); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  .hero-title {
+    font-family: var(--font-display); font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 900;
+    line-height: 1.05; letter-spacing: -0.04em; color: var(--color-text); margin: 0;
+  }
+  .hero-title em { font-style: italic; }
+  .word-for { color: var(--color-secondary); }
+
+  .hero-body {
+    font-size: var(--font-size-lg); color: var(--color-text-muted);
+    line-height: var(--line-height-relaxed); margin: 0; max-width: 44ch;
+  }
+
+  .hero-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3);
+    min-width: 220px;
+  }
+
+  .stat-card {
+    background: var(--color-surface); border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+    display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  }
+
+  .stat-n {
+    font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 900;
+    color: var(--color-secondary); line-height: 1; letter-spacing: -0.04em;
+  }
+
+  .stat-l {
+    font-size: var(--font-size-xs); color: var(--color-text-dim);
+    text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600;
+  }
+
+  /* ── Tag info banner ──────────────────────── */
+  .tag-info {
+    display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4); background: rgba(21,94,117,0.06);
+    border: 1px solid rgba(21,94,117,0.2); border-radius: var(--radius-md);
+    font-size: var(--font-size-sm); color: var(--color-text-muted);
+  }
+
+  .geo-chip {
+    display: inline-flex; align-items: center; padding: 2px var(--space-2);
+    background: rgba(21,94,117,0.1); border: 1px solid rgba(21,94,117,0.3);
+    border-radius: var(--radius-sm); font-size: var(--font-size-xs);
+    font-weight: 600; color: var(--color-secondary); font-family: var(--font-mono);
+  }
+
+  /* ── Empty state ──────────────────────────── */
+  .empty-hero {
+    border: 1px dashed var(--color-border); border-radius: var(--radius-xl);
+    padding: var(--space-12) var(--space-8); text-align: center;
+    color: var(--color-text-dim); display: grid; gap: var(--space-4);
+  }
+  .empty-hero svg { margin: 0 auto; opacity: 0.4; }
+  .empty-hero h2 { margin: 0; font-size: var(--font-size-xl); color: var(--color-text-muted); }
+  .empty-hero p { margin: 0; font-size: var(--font-size-sm); line-height: var(--line-height-relaxed); }
+  .empty-hero a { color: var(--color-secondary); }
+  .tag-list { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; }
+  .tag-code {
+    padding: var(--space-1) var(--space-3); background: var(--color-surface-raised);
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--color-secondary);
+  }
+
+  /* ── Role picker ──────────────────────────── */
+  .role-picker { display: grid; gap: var(--space-4); }
+  .role-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
+  @media (min-width: 900px) { .role-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .role-card {
+    appearance: none; -webkit-appearance: none; font-family: var(--font-sans);
+    font-size: inherit; white-space: normal; width: 100%;
+    border: 2px solid var(--color-border); background: var(--color-surface);
+    border-radius: var(--radius-xl); padding: var(--space-5); display: grid;
+    gap: var(--space-2); text-align: left; cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .role-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .role-card-teacher.active  { border-color: var(--color-primary);   background: var(--color-primary-glow); }
+  .role-card-student.active  { border-color: var(--color-secondary); background: var(--color-secondary-glow); }
+  .role-card-community.active { border-color: var(--color-accent);   background: var(--color-accent-glow); }
+  .role-card-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); margin-bottom: var(--space-1); }
+  .role-card-teacher   .role-card-icon { background: var(--color-primary-glow);   color: var(--color-primary); }
+  .role-card-student   .role-card-icon { background: var(--color-secondary-glow); color: var(--color-secondary); }
+  .role-card-community .role-card-icon { background: var(--color-accent-glow);    color: var(--color-accent); }
+  .role-card h3 { margin: 0; font-size: var(--font-size-xl); color: var(--color-text); }
+  .role-card p  { margin: 0; color: var(--color-text-muted); font-size: var(--font-size-sm); line-height: var(--line-height-relaxed); }
+
+  /* ── Catalog ──────────────────────────────── */
+  .catalog { display: grid; gap: var(--space-4); }
+  .catalog-header {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    flex-wrap: wrap; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-3);
+  }
+  .catalog-header h2 { margin: 0; font-size: var(--font-size-xl); }
+  .catalog-header p  { margin: 0; color: var(--color-text-muted); font-size: var(--font-size-sm); }
+  .catalog-header strong { color: var(--color-text); }
+  .cards { display: grid; gap: var(--space-3); }
+
+  /* Audience visibility */
+  #catalog[data-audience="teacher"]   .dataset-card:not([data-audiences~="teacher"])   { display: none; }
+  #catalog[data-audience="student"]   .dataset-card:not([data-audiences~="student"])   { display: none; }
+  #catalog[data-audience="community"] .dataset-card:not([data-audiences~="community"]) { display: none; }
+  #catalog:not([data-audience="teacher"]) .chip-pedagogical { display: none; }
+
+  .dataset-card {
+    border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+    background: var(--color-surface); display: grid; grid-template-columns: 1fr;
+    transition: border-color 0.15s ease;
+  }
+  .dataset-card:hover { border-color: var(--color-border-highlight); }
+
+  @media (min-width: 900px) {
+    .dataset-card { grid-template-columns: minmax(0, 1fr) auto; }
+  }
+
+  .card-body { padding: var(--space-5); display: grid; gap: var(--space-3); align-content: start; }
+
+  .card-top { display: flex; align-items: center; gap: var(--space-2); }
+
+  .cat-chip {
+    padding: 2px var(--space-2); border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs); font-weight: 600; text-transform: capitalize;
+  }
+  .cat-dataset { background: rgba(21,94,117,0.1); color: var(--color-secondary); border: 1px solid rgba(21,94,117,0.25); }
+  .cat-tool    { background: rgba(14,114,101,0.1); color: var(--color-primary);   border: 1px solid rgba(14,114,101,0.25); }
+  .cat-guide   { background: rgba(245,158,11,0.1); color: var(--color-accent);    border: 1px solid rgba(245,158,11,0.25); }
+  .cat-paper   { background: rgba(148,163,184,0.15); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+
+  .diff-chip {
+    padding: 2px var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--color-border);
+    font-size: var(--font-size-xs); font-weight: 500; color: var(--color-text-dim);
+    background: var(--color-surface-raised); text-transform: capitalize;
+  }
+
+  .card-body h3 { margin: 0; font-size: var(--font-size-lg); letter-spacing: -0.02em; }
+  .card-body h3 a { color: var(--color-text); text-decoration: none; transition: color 0.15s ease; }
+  .card-body h3 a:hover { color: var(--color-secondary); }
+  .card-body > p { margin: 0; color: var(--color-text-muted); font-size: var(--font-size-sm); line-height: var(--line-height-relaxed); }
+  .meta { color: var(--color-text-dim); font-family: var(--font-mono); font-size: var(--font-size-xs); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .chip {
+    display: inline-flex; align-items: center; padding: 2px var(--space-2);
+    border-radius: var(--radius-sm); border: 1px solid var(--color-border);
+    font-size: var(--font-size-xs); font-weight: 500; color: var(--color-text-muted);
+    background: var(--color-surface-raised);
+  }
+  .chip-theme      { border-color: rgba(21,94,117,0.25);  color: var(--color-secondary); background: rgba(21,94,117,0.08); }
+  .chip-pedagogical { border-color: rgba(14,114,101,0.25); color: var(--color-primary);   background: var(--color-primary-glow); }
+
+  .card-actions {
+    display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4);
+    border-top: 1px solid var(--color-border); background: var(--color-surface-raised);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg); justify-content: flex-end; align-items: flex-end;
+  }
+
+  @media (min-width: 900px) {
+    .card-actions {
+      border-top: none; border-left: 1px solid var(--color-border);
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0; min-width: 140px;
+    }
+  }
+
+  .visit-btn, .preview-btn {
+    display: inline-flex; align-items: center; padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md); font-size: var(--font-size-xs); font-weight: 600;
+    text-decoration: none; transition: all 0.15s ease; white-space: nowrap;
+  }
+  .visit-btn {
+    background: rgba(21,94,117,0.1); border: 1px solid rgba(21,94,117,0.25);
+    color: var(--color-secondary);
+  }
+  .visit-btn:hover { background: rgba(21,94,117,0.2); border-color: var(--color-secondary); text-decoration: none; }
+
+  .preview-btn {
+    background: var(--color-surface-raised); border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+  .preview-btn:hover { border-color: var(--color-secondary); color: var(--color-secondary); text-decoration: none; }
+
+  /* ── Buttons ──────────────────────────────── */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    padding: var(--space-3) var(--space-6); background: var(--color-secondary); color: #F8FAFC;
+    border: 1.5px solid var(--color-secondary); border-radius: var(--radius-md);
+    font-size: var(--font-size-sm); font-weight: 600; letter-spacing: 0.02em;
+    text-decoration: none; transition: all 0.18s ease; white-space: nowrap;
+  }
+  .btn-primary:hover {
+    background: var(--color-secondary-light); border-color: var(--color-secondary-light);
+    box-shadow: var(--shadow-glow-secondary); transform: translateY(-1px); text-decoration: none; color: #F8FAFC;
+  }
+  .btn-primary svg { transition: transform 0.18s ease; }
+  .btn-primary:hover svg { transform: translateX(3px); }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; padding: var(--space-3) var(--space-5);
+    background: transparent; color: var(--color-text-muted); border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md); font-size: var(--font-size-sm); font-weight: 600;
+    text-decoration: none; transition: all 0.18s ease; white-space: nowrap;
+  }
+  .btn-ghost:hover { border-color: var(--color-secondary); color: var(--color-secondary); background: var(--color-secondary-glow); text-decoration: none; transform: translateY(-1px); }
+  .btn-large { padding: var(--space-4) var(--space-8); font-size: var(--font-size-base); }
+
+  /* ── CTA ──────────────────────────────────── */
+  .cta-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-8);
+    padding: var(--space-10) var(--space-12); background: var(--color-surface-raised);
+    border: 1.5px solid var(--color-border); border-radius: var(--radius-xl);
+    flex-wrap: wrap; margin-top: var(--space-4);
+  }
+  .cta-text { flex: 1; min-width: 260px; }
+  .cta-eyebrow {
+    font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600;
+    color: var(--color-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-2);
+  }
+  .cta-title { font-family: var(--font-display); font-size: var(--font-size-2xl); font-weight: 900; color: var(--color-text); margin: 0 0 var(--space-3); letter-spacing: -0.03em; }
+  .cta-body { margin: 0; font-size: var(--font-size-sm); color: var(--color-text-muted); line-height: var(--line-height-relaxed); max-width: 44ch; }
+  .cta-body code { background: var(--color-surface); border: 1px solid var(--color-border); padding: 1px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85em; color: var(--color-secondary); }
+  .cta-actions { flex-shrink: 0; }
+</style>

@@ -1,7 +1,14 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { canAudienceAccess, extractPedagogicalTags, type AudienceRole } from '@lib/data/libraryAccess';
+import {
+  canAudienceAccess,
+  extractPedagogicalTags,
+  formatGeographicTagLabel,
+  formatTagLabel,
+  sanitizePedagogicalTags,
+  type AudienceRole,
+} from '@lib/data/libraryAccess';
 import { withBasePath } from '@lib/paths';
 
 const resources = await getCollection('master-library');
@@ -25,9 +32,10 @@ const allPedagogicalTags = extractPedagogicalTags(resources);
 // Apply non-audience filters server-side (theme, search, sort)
 const filteredResources = resources.filter((resource) => {
   const themes = resource.data.dataThemes.length > 0 ? resource.data.dataThemes : resource.data.tags;
+  const pedagogicalTags = sanitizePedagogicalTags(resource.data.pedagogicalTags);
   const matchesTheme = selectedTheme ? themes.includes(selectedTheme) : true;
   const matchesPedagogicalTag = selectedPedagogicalTag
-    ? resource.data.pedagogicalTags.includes(selectedPedagogicalTag)
+    ? pedagogicalTags.includes(selectedPedagogicalTag)
     : true;
   const haystack = [resource.data.title, resource.data.description, ...themes, ...resource.data.tags]
     .join(' ')
@@ -54,8 +62,8 @@ function getResourceAudiences(resource: (typeof resources)[number]): string {
 
 const clearFiltersHref = withBasePath('/complete-catalog');
 const activeFilters = [
-  selectedTheme ? `Theme: ${selectedTheme}` : '',
-  selectedPedagogicalTag ? `Pedagogical Tag: ${selectedPedagogicalTag}` : '',
+  selectedTheme ? `Theme: ${formatGeographicTagLabel(selectedTheme)}` : '',
+  selectedPedagogicalTag ? `Pedagogical Tag: ${formatTagLabel(selectedPedagogicalTag)}` : '',
   query ? `Search: ${query}` : '',
 ].filter(Boolean);
 
@@ -92,7 +100,7 @@ function formatDate(date: Date | undefined): string {
           <select name="theme">
             <option value="">All themes</option>
             {allThemes.map((theme) => (
-              <option value={theme} selected={selectedTheme === theme}>{theme}</option>
+              <option value={theme} selected={selectedTheme === theme}>{formatGeographicTagLabel(theme)}</option>
             ))}
           </select>
         </label>
@@ -103,7 +111,7 @@ function formatDate(date: Date | undefined): string {
           <select name="pedagogicalTag">
             <option value="">All pedagogical tags</option>
             {allPedagogicalTags.map((tag) => (
-              <option value={tag} selected={selectedPedagogicalTag === tag}>{tag}</option>
+              <option value={tag} selected={selectedPedagogicalTag === tag}>{formatTagLabel(tag)}</option>
             ))}
           </select>
         </label>
@@ -211,10 +219,10 @@ function formatDate(date: Date | undefined): string {
                       <p>{resource.data.description}</p>
                       <div class="chips">
                         {themes.slice(0, 3).map((theme) => (
-                          <span class="chip chip-theme">{theme}</span>
+                          <span class="chip chip-theme">{formatGeographicTagLabel(theme)}</span>
                         ))}
-                        {resource.data.pedagogicalTags.slice(0, 2).map((tag) => (
-                          <span class="chip chip-pedagogical">{tag}</span>
+                        {sanitizePedagogicalTags(resource.data.pedagogicalTags).slice(0, 2).map((tag) => (
+                          <span class="chip chip-pedagogical">{formatTagLabel(tag)}</span>
                         ))}
                       </div>
                       <p class="meta-line">Updated {formatDate(resource.data.publishedDate)}</p>
@@ -253,13 +261,13 @@ function formatDate(date: Date | undefined): string {
                         </td>
                         <td>
                           <div class="chips">
-                            {themes.slice(0, 2).map((theme) => <span class="chip chip-theme">{theme}</span>)}
+                            {themes.slice(0, 2).map((theme) => <span class="chip chip-theme">{formatGeographicTagLabel(theme)}</span>)}
                           </div>
                         </td>
                         <td class="td-pedagogical">
                           <div class="chips">
-                            {resource.data.pedagogicalTags.slice(0, 2).map((tag) => (
-                              <span class="chip chip-pedagogical">{tag}</span>
+                            {sanitizePedagogicalTags(resource.data.pedagogicalTags).slice(0, 2).map((tag) => (
+                              <span class="chip chip-pedagogical">{formatTagLabel(tag)}</span>
                             ))}
                           </div>
                         </td>

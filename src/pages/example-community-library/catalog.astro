@@ -1,7 +1,7 @@
 ---
 import CommunityLayout from '@layouts/CommunityLayout.astro';
 import { getCollection } from 'astro:content';
-import { canAudienceAccess } from '@lib/data/libraryAccess';
+import { canAudienceAccess, formatGeographicTagLabel, formatTagLabel, sanitizePedagogicalTags } from '@lib/data/libraryAccess';
 import { withBasePath } from '@lib/paths';
 
 const allResources = await getCollection('master-library');
@@ -98,9 +98,9 @@ const base = '/example-community-library';
                   <h3><a href={previewHref} class="preview-link">{resource.data.title}</a></h3>
                   <p>{resource.data.description}</p>
                   <div class="chips">
-                    {themes.slice(0, 3).map(t => <span class="chip chip-theme">{t}</span>)}
-                    {resource.data.pedagogicalTags.slice(0, 2).map(t => (
-                      <span class="chip chip-pedagogical">{t}</span>
+                    {themes.slice(0, 3).map(t => <span class="chip chip-theme">{formatGeographicTagLabel(t)}</span>)}
+                    {sanitizePedagogicalTags(resource.data.pedagogicalTags).slice(0, 2).map(t => (
+                      <span class="chip chip-pedagogical">{formatTagLabel(t)}</span>
                     ))}
                   </div>
                   {resource.data.publishedDate && (
