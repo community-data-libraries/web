@@ -1,6 +1,6 @@
 # Web Architecture
 
-`web/` is a static Astro site (`output: 'static'`) that renders the CDL dataset catalog for different audiences, plus a geographic marker map and a content-editing CMS. This document covers the site's structure, routing, content model, its relationship to the backend, and CI/CD. For the data-pipeline side, see [`backend/docs/PIPELINE.md`](../../../backend/docs/PIPELINE.md); for how the two projects fit together, see the repo-root [`ARCHITECTURE.md`](../../../ARCHITECTURE.md).
+`web/` is a static Astro site (`output: 'static'`) that renders the CDL dataset catalog for different audiences, plus a geographic marker map and a content-editing CMS. This document covers the site's structure, routing, content model, its relationship to the backend, and CI/CD. For the data-pipeline side, see [`backend/docs/PIPELINE.md`](../../../backend/docs/PIPELINE.md).
 
 ## Tech stack
 
@@ -38,7 +38,7 @@
 
 ```
 web/
-├── backend/            local MIRROR of ../backend (do not edit directly — see ARCHITECTURE.md)
+├── backend/            local MIRROR of ../backend (do not edit directly — see "package.json scripts" above for the sync commands)
 ├── data/geo/           geographic marker data, independent of the dataset pipeline
 ├── docs/               this documentation
 ├── netlify/functions/  Netlify Forms webhook (submission-notify.js)
@@ -117,4 +117,4 @@ Edit → `npm run validate:geo` → PR. See `data/geo/README.md` for full contri
 
 ## Known documentation staleness
 
-A few existing docs under `web/docs/` predate the current collection name and file layout and still reference `src/content/complete-catalog` and `src/content/config.ts` (now `master-library` and `src/content.config.ts` respectively): `docs/technical/decapcms-implementation.md`, `docs/data/community-library-structure.md`, `docs/reference/job-description-data-role.md`. This document and the repo-root `ARCHITECTURE.md` reflect the current, verified names.
+A few existing docs under `web/docs/` predate the current collection name and file layout and still reference `src/content/complete-catalog` and `src/content/config.ts` (now `master-library` and `src/content.config.ts` respectively): `docs/technical/decapcms-implementation.md`, `docs/data/community-library-structure.md`, `docs/reference/job-description-data-role.md`. This document reflects the current, verified names.
