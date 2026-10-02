@@ -143,6 +143,7 @@ const catalogHref = withBasePath('/complete-catalog');
             </a>
           </div>
           <div class="chart-canvas-wrap">
+            <p id="chart-note" class="chart-note" hidden></p>
             <div id="chart-loading" class="section-loading" hidden>Loading chart…</div>
             <div id="focal-chart" aria-label="Focal variable chart"></div>
           </div>
@@ -177,6 +178,7 @@ const catalogHref = withBasePath('/complete-catalog');
       normalizeDescriptionTags,
       getPedagogicalTags,
       getGeographicTags,
+      getGeographicDisplayTags,
     } from '@lib/api/backend';
     import { withBasePath } from '@lib/paths';
     import { previewUnavailableReason } from '@lib/data/previewSupport';
@@ -216,15 +218,34 @@ const catalogHref = withBasePath('/complete-catalog');
       return source.variables ?? source.variable_names ?? [];
     }
 
+    const PREFERRED_FOCAL = /estimate|total|value|amount|production|population/i;
+
     function pickFocalVariable(source) {
-      const numeric = source.variable_report?.find(
+      const numeric = (source.variable_report ?? []).filter(
         (v) => v.type === 'integer' || v.type === 'float',
       );
-      if (numeric?.name) return numeric.name;
+      const focal = numeric.find((v) => PREFERRED_FOCAL.test(v.name)) ?? numeric[0];
+      if (focal?.name) return focal.name;
 
       const vars = getSourceVariables(source);
-      const preferred = vars.find((v) => /estimate|total|value|amount|production|population/i.test(v));
+      const preferred = vars.find((v) => PREFERRED_FOCAL.test(v));
       return preferred ?? vars[vars.length - 1] ?? '';
+    }
+
+    // Some catalog entries (e.g. usda-milk-production) carry neither `variables`
+    // nor `variable_report`, which left the X/Y dropdowns empty. Derive both from
+    // a sample of the data itself: a column is numeric when every non-blank cell is.
+    async function ensureSourceVariables(source) {
+      if (getSourceVariables(source).length > 0 || source.variable_report?.length) return;
+      const sample = await fetchPreview(sourceId, { limit: 200 });
+      source.variables = sample.columns;
+      source.variable_report = sample.columns.map((name, colIdx) => {
+        const cells = sample.rows
+          .map((row) => row[colIdx])
+          .filter((cell) => String(cell ?? '').trim() !== '');
+        const numeric = cells.length > 0 && cells.every(isNumericCell);
+        return { name, type: numeric ? 'float' : 'string' };
+      });
     }
 
     function pickInitialState(source) {
@@ -278,11 +299,9 @@ const catalogHref = withBasePath('/complete-catalog');
       tags.forEach((tag, i) => {
         const chip = document.createElement('span');
         chip.className = `tag-chip ${filledFirst && i === 0 ? 'tag-filled' : 'tag-outline'}`;
-        chip.textContent = tag;
+        // Keep the comma inside the chip so the flex gap only falls after it.
+        chip.textContent = i < tags.length - 1 ? `${tag},` : tag;
         container.appendChild(chip);
-        if (i < tags.length - 1) {
-          container.appendChild(document.createTextNode(', '));
-        }
       });
     }
 
@@ -408,6 +427,20 @@ const catalogHref = withBasePath('/complete-catalog');
       chartInstance.render();
     }
 
+    // Bar and Line plots average the Y values within each X value; say so,
+    // since the Y axis otherwise reads as raw values.
+    function renderChartNote(chartData, plotType: string) {
+      const note = document.getElementById('chart-note');
+      if (!note) return;
+      if (plotType === 'scatter' || !chartData.xLabel) {
+        note.setAttribute('hidden', '');
+        return;
+      }
+      const mark = plotType === 'line' ? 'Each point' : 'Each bar';
+      note.textContent = `${mark} shows the average (mean) ${chartData.label} for that ${chartData.xLabel}.`;
+      note.removeAttribute('hidden');
+    }
+
     function escapeHtml(value) {
       return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -509,6 +542,7 @@ const catalogHref = withBasePath('/complete-catalog');
 
         renderTable(preview);
         renderChart(chart, plotType);
+        renderChartNote(chart, plotType);
       } finally {
         setSectionLoading(false, false);
       }
@@ -594,7 +628,7 @@ const catalogHref = withBasePath('/complete-catalog');
 
       renderTags('topical-tags', normalizeDescriptionTags(source.description_tags), true);
       renderTags('pedagogical-tags', getPedagogicalTags(source));
-      renderTags('geographic-tags', getGeographicTags(source));
+      renderTags('geographic-tags', getGeographicDisplayTags(source));
 
       const dsWho = document.getElementById('ds-who');
       const dsHow = document.getElementById('ds-how');
@@ -611,6 +645,13 @@ const catalogHref = withBasePath('/complete-catalog');
       if (unavailable) {
         showPreviewUnavailable(unavailable, source.provider?.url);
         return;
+      }
+
+      try {
+        await ensureSourceVariables(source);
+        focalVariable = pickFocalVariable(source);
+      } catch (sampleError) {
+        console.warn('Could not infer variables from data:', sampleError);
       }
 
       const geoTags = getGeographicTags(source);
@@ -933,7 +974,9 @@ const catalogHref = withBasePath('/complete-catalog');
     .tag-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-2);
+      column-gap: 0.35em;
+      row-gap: 0;
+      line-height: 1.5;
     }
 
     .tag-chip {
@@ -1179,6 +1222,12 @@ const catalogHref = withBasePath('/complete-catalog');
       margin-bottom: var(--space-4);
       padding-bottom: var(--space-3);
       border-bottom: 1px solid var(--color-border);
+    }
+
+    .chart-note {
+      margin: 0 0 var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
     }
 
     .table-meta {
