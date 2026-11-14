@@ -2,7 +2,7 @@
 import CommunityLayout from '@layouts/CommunityLayout.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { libraryHref } from '@lib/paths';
-import { AUDIENCE_ROLES, communityDisplay } from '@lib/data/communityFilter';
+import { AUDIENCE_ROLES, communityDisplay, countyInitial as initialFor } from '@lib/data/communityFilter';
 import { stateCountyOutline } from '@lib/data/countyOutline';
 import { countyBurst } from '@lib/data/countyBurst';
 import { pointillistScene } from '@lib/data/pointillistScene';
@@ -23,22 +23,22 @@ const { community } = Astro.props;
 const data = community.data;
 const { libraryTitle, welcomeHeading, placeName } = communityDisplay(data);
 const catalogHref = libraryHref(data.slug, '/catalog/');
-const location = [data.county, data.state_code].filter(Boolean).join(', ');
 
-// e.g. "Knoxville Community Data Library"; falls back to the entry's `name`
-// when it has no place_name (see communityDisplay).
+// e.g. "Knox County, TN Community Data Library"; falls back to the place name,
+// then the entry's `name` (see communityDisplay).
 const pageHeading = libraryTitle;
 const footerTitle = libraryTitle;
 
 // Tagline under the heading, the same wording for every library, e.g.
-// "Curated open data resources for Knox County, Tennessee." Falls back to the
+// "Curated open data resources for Knox County, Tennessee" (no full stop: it is
+// a phrase, not a sentence). Falls back to the
 // place name if the county or state is missing. (The entry's own description is
 // still used for the page's meta description.)
 const taglinePlace =
   [data.county, data.state_name ?? data.state_code].every(Boolean)
     ? `${data.county}, ${data.state_name ?? data.state_code}`
     : placeName;
-const tagline = `Curated open data resources for ${taglinePlace}.`;
+const tagline = `Curated open data resources for ${taglinePlace}`; // a phrase, so no full stop
 
 // State + county for the header graphic: the whole state, with this county
 // filled in on it. Resolved at build time from the TIGER topology in
@@ -81,9 +81,7 @@ const ART_H = 315; // frame viewBox height (4:3, matches the frame's aspect-rati
 // one "county" is the whole district, so it always reads "DC" and may sit on
 // top of the county. Skipped if there's no county name.
 const isDC = data.state_code === 'DC';
-const countyInitial = isDC
-  ? 'DC'
-  : ((data.county ?? '').match(/\p{L}/u)?.[0]?.toLocaleUpperCase() ?? '');
+const countyInitial = initialFor(data);
 
 // Placement: countyBurst picks the spot and size for the letter so it NEVER
 // covers the county, stays inside the frame, and otherwise sits as large as
@@ -149,7 +147,6 @@ const roleDescriptions = {
   description={data.description ??
     `${libraryTitle}: local data for teachers, students, and community members.`}
   communityName={libraryTitle}
-  communityLocation={location || undefined}
   communitySlug={data.slug}
   page="home"
   footerTitle={footerTitle}
@@ -305,10 +302,10 @@ const roleDescriptions = {
       opacity: 0.6;
     }
 
-    /* State in a pale teal tint; its county filled in the brand teal. */
+    /* State in a pale teal tint; its county in a brighter version of the header/footer teal. */
     .state-shape {
       fill: #e4efee;
-      stroke: #107366;
+      stroke: #3D707A; /* between the header/footer teal (#36606A) and the county (#45808A) */
       stroke-width: 1.5;
       stroke-linejoin: round;
     }
@@ -322,20 +319,22 @@ const roleDescriptions = {
       stroke-linejoin: round;
     }
 
+    /* A brighter cousin of the header and footer teal (#36606A), with a
+       darker edge. */
     .county-shape {
-      fill: #107366;
-      stroke: #0b5a50;
+      fill: #45808A;
+      stroke: #2F5B63;
       stroke-width: 1;
       stroke-linejoin: round;
     }
 
-    /* Large navy-grosgrain initial (fill is the SVG pattern). The pale blue
-       edge echoes the footer emblem circle's border; the stroke is painted under
+    /* Large navy-grosgrain initial (fill is the SVG pattern). The soft
+       grey-mint edge matches the nav's exit door; the stroke is painted under
        the fill, so only its outer half shows. */
     .county-initial {
       font-family: var(--font-display);
       font-weight: 800;
-      stroke: #afe5f3;
+      stroke: #b1d9d4; /* the soft grey-mint of the nav's "Exit to CDL Main" door */
       stroke-width: 3;
       stroke-linejoin: round;
       paint-order: stroke;

@@ -18,9 +18,8 @@ interface Props {
 const { community } = Astro.props;
 const data = community.data;
 const { libraryTitle, placeName } = communityDisplay(data);
-const base = `/communities/${data.slug}`;
 const location = [data.county, data.state_code].filter(Boolean).join(', ');
-const footerTitle = `${placeName} Community Data Library`;
+const footerTitle = libraryTitle;
 // e.g. "Contact the Knox County, TN librarian"; falls back to the place name.
 const contactHeading = `Contact the ${location || placeName} librarian`;
 ---
@@ -29,8 +28,8 @@ const contactHeading = `Contact the ${location || placeName} librarian`;
   title="Contact the librarian"
   description={`Contact the librarian for ${libraryTitle}.`}
   communityName={libraryTitle}
-  communityLocation={location || undefined}
-  communityBase={base}
+  communitySlug={data.slug}
+  page="contact"
   footerTitle={footerTitle}
 >
   <section class="contact" aria-labelledby="contact-heading">

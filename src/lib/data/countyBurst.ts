@@ -116,7 +116,7 @@ export function distanceToOutline([px, py]: Point, rings: Point[][]): number {
 }
 
 /** Points spaced evenly along a closed ring. */
-function resample(ring: Point[], step: number): Point[] {
+export function resample(ring: Point[], step: number): Point[] {
   const out: Point[] = [];
   let carry = 0;
   for (let i = 0; i < ring.length; i++) {
@@ -165,7 +165,12 @@ export interface LetterPlacement {
 const LETTER_WIDTHS: Record<string, number> = { I: 0.42, J: 0.55, M: 1.0, W: 1.05 };
 const DEFAULT_LETTER_WIDTH = 0.82;
 /** Capital height as a share of the font size (Philosopher/Georgia ≈ 0.7). */
-const CAP_HEIGHT = 0.72;
+export const CAP_HEIGHT = 0.72;
+
+/** Approximate width of a run of capitals, in em (see LETTER_WIDTHS). */
+export function letterWidthEm(text: string): number {
+  return [...text].reduce((sum, ch) => sum + (LETTER_WIDTHS[ch] ?? DEFAULT_LETTER_WIDTH), 0);
+}
 
 /**
  * Choose where (and how big) to draw a decorative capital so it NEVER covers
@@ -185,10 +190,7 @@ function placeLetter(
   height: number,
   { text, coverCounty = false, maxSize, minSize, margin = 8 }: LetterOptions
 ): LetterPlacement | null {
-  const widthEm = [...text].reduce(
-    (sum, ch) => sum + (LETTER_WIDTHS[ch] ?? DEFAULT_LETTER_WIDTH),
-    0
-  );
+  const widthEm = letterWidthEm(text);
   const countyPoints = coverCounty ? [] : county.flatMap((ring) => resample(ring, 2));
   const frameMargin = 4;
 

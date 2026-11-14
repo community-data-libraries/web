@@ -28,11 +28,24 @@ export interface SceneOptions {
   letterBox?: { x0: number; y0: number; x1: number; y1: number } | null;
   /** Distance between dots. */
   spacing?: number;
+  /** Sun radius before any shrinking to fit, in frame units. */
+  sunRadius?: number;
+  /** How far the horizon rises and falls, in frame units. */
+  hillHeight?: number;
+  /** Colour sets to use instead of the default pale ones. */
+  colors?: Partial<SceneColors>;
 }
 
-const SKY = ['#A9D9E0', '#BFE3EA', '#CFEBEE', '#DCEFF2'];
-const GRASS = ['#A3CE7A', '#B9DA98', '#CFE5B5', '#DDEBC8'];
-const SUN = ['#F5B942', '#F8CD6B', '#FADD94'];
+export interface SceneColors {
+  /** Sky, from the top of the sky down toward the horizon. */
+  sky: string[];
+  grass: string[];
+  sun: string[];
+}
+
+const DEFAULT_SKY = ['#A9D9E0', '#BFE3EA', '#CFEBEE', '#DCEFF2'];
+const DEFAULT_GRASS = ['#A3CE7A', '#B9DA98', '#CFE5B5', '#DDEBC8'];
+const DEFAULT_SUN = ['#F5B942', '#F8CD6B', '#FADD94'];
 
 export function pointillistScene({
   width,
@@ -42,7 +55,13 @@ export function pointillistScene({
   avoidGap = 12,
   letterBox = null,
   spacing = 5.5,
+  sunRadius: sunR = 20,
+  hillHeight = 9,
+  colors = {},
 }: SceneOptions): BurstDot[] {
+  const SKY = colors.sky ?? DEFAULT_SKY;
+  const GRASS = colors.grass ?? DEFAULT_GRASS;
+  const SUN = colors.sun ?? DEFAULT_SUN;
   const rand = seededRandom(`${seed}:scene`);
   const pick = (colors: string[]) => colors[Math.floor(rand() * colors.length)];
   const cx = width / 2;
@@ -60,7 +79,7 @@ export function pointillistScene({
 
   // Scene layout: horizon with a gentle hill.
   const hillPhase = rand() * Math.PI * 2;
-  const horizon = (x: number) => height * 0.6 + 9 * Math.sin((x / width) * Math.PI * 2 + hillPhase);
+  const horizon = (x: number) => height * 0.6 + hillHeight * Math.sin((x / width) * Math.PI * 2 + hillPhase);
 
   // How much room a circle has: distance from its edge to the state (negative
   // when it overlaps) and whether it stays inside the splotch.
@@ -107,7 +126,6 @@ export function pointillistScene({
     return pts;
   };
 
-  const sunR = 20;
   // The sun may tuck partly behind the letter, but at most about half of it:
   // its centre must be at least half a radius outside the letter's box.
   const clearOfLetter = ([x, y]: Point, r: number) => {
