@@ -56,5 +56,7 @@ export default async (request, context) => {
 export const config = {
   path: '/*',
   // Built assets and functions never need routing; skipping them saves invocations.
-  excludedPath: ['/web/_astro/*', '/.netlify/*', '/api/*'],
+  // /cdl-relay/* is the analytics proxy in netlify.toml, which must reach PostHog
+  // unchanged on library subdomains too.
+  excludedPath: ['/web/_astro/*', '/.netlify/*', '/api/*', '/cdl-relay/*'],
 };

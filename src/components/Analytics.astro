@@ -1,0 +1,124 @@
+---
+/**
+ * Usage analytics notice and loader, included once by each layout. Renders nothing
+ * unless PUBLIC_POSTHOG_KEY is set at build time. See docs/technical/analytics.md.
+ */
+import { normalizeConsentMode } from '@lib/analytics/core';
+import { withBasePath, mainSiteHref } from '@lib/paths';
+
+interface Props {
+  /** Community library slug, on library pages. */
+  community?: string;
+  /** 'home' | 'catalog' | 'contact' on library pages. */
+  libraryPage?: string;
+}
+
+const { community = '', libraryPage = '' } = Astro.props;
+const enabled = Boolean((import.meta.env.PUBLIC_POSTHOG_KEY ?? '').trim());
+const mode = normalizeConsentMode(import.meta.env.PUBLIC_ANALYTICS_CONSENT);
+// Library pages may be on a subdomain, so the privacy page is linked absolutely there.
+const privacyHref = community ? mainSiteHref('/privacy') : withBasePath('/privacy');
+---
+
+{
+  enabled && (
+    <div
+      id="cdl-analytics-banner"
+      class="analytics-banner"
+      role="region"
+      aria-label="Usage analytics"
+      data-community={community}
+      data-library-page={libraryPage}
+      hidden
+    >
+      <p class="analytics-text">
+        {mode === 'opt-in'
+          ? 'Can we record how this site is used? We only count things like which pages and datasets are opened and which buttons are used. No names, emails or cookies.'
+          : 'We record how this site is used, like which pages and datasets are opened and which buttons are used. No names, emails or cookies.'}{' '}
+        <a href={privacyHref}>Learn more</a>
+      </p>
+      <div class="analytics-actions">
+        {mode === 'opt-in' ? (
+          <>
+            <button type="button" class="analytics-btn primary" data-consent="granted">Allow</button>
+            <button type="button" class="analytics-btn" data-consent="denied">No thanks</button>
+          </>
+        ) : (
+          <>
+            <button type="button" class="analytics-btn primary" data-consent="granted">OK</button>
+            <button type="button" class="analytics-btn" data-consent="denied">Turn off</button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+<script>
+  // Does nothing when PUBLIC_POSTHOG_KEY is unset (initAnalytics returns at once).
+  import { initAnalytics } from '@lib/client/analytics';
+
+  const banner = document.getElementById('cdl-analytics-banner');
+  initAnalytics({
+    community: banner?.dataset.community,
+    libraryPage: banner?.dataset.libraryPage,
+  });
+</script>
+
+<style>
+  .analytics-banner {
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-4, 1rem);
+    transform: translateX(-50%);
+    z-index: 60;
+    width: min(680px, calc(100% - 2rem));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    padding: 0.875rem 1rem;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #d6d3cc);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.12));
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .analytics-banner[hidden] {
+    display: none;
+  }
+  .analytics-text {
+    flex: 1 1 320px;
+    margin: 0;
+  }
+  .analytics-text a {
+    text-decoration: underline;
+  }
+  .analytics-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .analytics-btn {
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border, #d6d3cc);
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #4a3526);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .analytics-btn:hover {
+    border-color: var(--color-text-dim, #556470);
+  }
+  .analytics-btn.primary {
+    background: var(--color-primary, #1f2933);
+    border-color: var(--color-primary, #1f2933);
+    color: #fff;
+  }
+  .analytics-btn:focus-visible {
+    outline: 2px solid var(--color-focus, #2563eb);
+    outline-offset: 2px;
+  }
+</style>

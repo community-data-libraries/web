@@ -20,6 +20,7 @@ import DataView from './DataView';
 import ExportMenu from './ExportMenu';
 import NotebookTabs, { type NotebookTab } from './NotebookTabs';
 import UploadZone, { UNSUPPORTED_FILE } from './UploadZone';
+import { track } from '@lib/client/analytics';
 
 export type { NotebookFile } from './notebookFiles';
 
@@ -202,6 +203,7 @@ export default function NotebookPanel({ sourceId, source }: { sourceId: string; 
   }
 
   function addCodeCell() {
+    track('cleaning_code_cell_added');
     const cell = newCell('');
     setCells((cs) => [...cs, cell]);
     setFocusId(cell.id);
@@ -211,6 +213,10 @@ export default function NotebookPanel({ sourceId, source }: { sourceId: string; 
 
   const insertAfter = runner.insertCellAndRun;
   const insertCellAndRun = useCallback((code: string) => insertAfter(code, activeId), [activeId, insertAfter]);
+  const changeTab = useCallback((next: NotebookTab) => {
+    setTab(next);
+    track('cleaning_tab_viewed', { tab: next });
+  }, []);
 
   async function stop() {
     cancel();
@@ -231,6 +237,7 @@ export default function NotebookPanel({ sourceId, source }: { sourceId: string; 
 
   function reset() {
     if (!window.confirm('Delete all your cells and start again from the load cell?')) return;
+    track('cleaning_reset');
     cancel();
     setRunAllHint(false);
     setNotice('');
@@ -273,6 +280,8 @@ export default function NotebookPanel({ sourceId, source }: { sourceId: string; 
     }
     setLoadError('');
     setUploadOpen(false);
+    // Only the kind of file is recorded, never its name or contents.
+    track('cleaning_file_uploaded', { file_kind: kind, file_format: f.format });
     await loadFile(f);
   }
 
@@ -373,6 +382,7 @@ export default function NotebookPanel({ sourceId, source }: { sourceId: string; 
           className="nb-btn nb-btn--primary"
           onClick={() => {
             setRunAllHint(false);
+            track('cleaning_run_all', { cells: cells.length });
             void runAll();
           }}
           disabled={!hasCells || runningAll}
@@ -408,7 +418,7 @@ export default function NotebookPanel({ sourceId, source }: { sourceId: string; 
 
       <NotebookTabs
         active={tab}
-        onChange={setTab}
+        onChange={changeTab}
         tabs={[
           {
             id: 'steps',

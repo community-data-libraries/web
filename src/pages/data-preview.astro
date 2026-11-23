@@ -302,6 +302,7 @@ const pageData = {
       type RowFile,
     } from '@lib/data/staticPreview';
     import type { DownloadFileType } from '@lib/data/fileType';
+    import { track } from '@lib/client/analytics';
 
     interface SourceModel {
       id: string;
@@ -743,6 +744,16 @@ const pageData = {
       $('loading-state').hidden = true;
       $('preview-content').hidden = false;
       renderDetails(source);
+      track('dataset_viewed', {
+        dataset_title: source.title,
+        provider: source.provider || undefined,
+        topics: source.topical,
+        stats_tags: source.pedagogical,
+        spatial_units: source.geographic,
+        file_type: source.fileType?.label,
+        county_level: source.counties > 0,
+        info_only: Boolean(source.unavailable),
+      });
       if (source.unavailable) {
         showPreviewUnavailable(source.unavailable, source.providerUrl);
         return;

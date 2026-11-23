@@ -1,0 +1,176 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { normalizeConsentMode } from '@lib/analytics/core';
+
+// Text follows docs/technical/analytics.md; update both together.
+const enabled = Boolean((import.meta.env.PUBLIC_POSTHOG_KEY ?? '').trim());
+const mode = normalizeConsentMode(import.meta.env.PUBLIC_ANALYTICS_CONSENT);
+---
+
+<Layout
+  title="Privacy"
+  description="What Community Data Libraries records about how the site is used, and how to turn it off."
+>
+  <section class="privacy-shell">
+    <header class="page-header">
+      <p class="eyebrow">Privacy</p>
+      <h1>How we learn how the site is used</h1>
+      <p class="intro">
+        Community Data Libraries is a research project of the OPALS Lab at the University of Tennessee,
+        Knoxville. To improve the site and to report how it is used, we can record anonymous usage
+        information. Here is exactly what that means.
+      </p>
+    </header>
+
+    {
+      enabled ? (
+        <article class="privacy-card" aria-labelledby="choice-heading">
+          <h2 id="choice-heading">Your choice</h2>
+          <p>
+            Usage analytics is <strong data-analytics-status>off</strong> in this browser.
+            {mode === 'opt-in'
+              ? ' Nothing is recorded unless you allow it.'
+              : ' You can turn it off at any time.'}
+          </p>
+          <div class="choice-actions">
+            <button type="button" class="button" data-analytics-set="granted">Allow analytics</button>
+            <button type="button" class="button secondary" data-analytics-set="denied">Turn analytics off</button>
+          </div>
+          <p class="note">The site works the same either way.</p>
+        </article>
+      ) : (
+        <article class="privacy-card">
+          <h2>Currently off</h2>
+          <p>This site is not recording usage analytics right now.</p>
+        </article>
+      )
+    }
+
+    <article class="privacy-card">
+      <h2>What we record</h2>
+      <ul>
+        <li>Which pages are visited and how long a page is open</li>
+        <li>Which datasets are opened, with their topic, geographic level and statistics tags</li>
+        <li>Clicks on download and provider links</li>
+        <li>Which steps of the data cleaning tool are used, and whether results are exported (never the data itself)</li>
+        <li>Catalog filters and search words, and how many results they returned</li>
+        <li>Which view you pick: teacher, student or community member</li>
+        <li>The kind of dataset suggested on the Suggest a Dataset form (its themes, geographic level and the role you picked, such as teacher or researcher)</li>
+        <li>That a message to a community librarian was sent, or an email link was clicked (never what you wrote)</li>
+        <li>General browser and device type</li>
+      </ul>
+    </article>
+
+    <article class="privacy-card">
+      <h2>What we never record</h2>
+      <ul>
+        <li>Your name, email address, or anything you type into a form</li>
+        <li>Files you upload to the cleaning tool, or their contents</li>
+        <li>IP addresses or precise location</li>
+        <li>Recordings of your screen or mouse</li>
+        <li>Anything on librarian sign-in and editing pages</li>
+      </ul>
+      <p>
+        We don't use cookies for this. A temporary ID is kept only until you close the browser tab, and
+        your choice above is remembered in this browser.
+      </p>
+    </article>
+
+    <article class="privacy-card">
+      <h2>Who sees it</h2>
+      <p>
+        The information is sent to PostHog, an analytics service, through this website's own address. Only
+        the Community Data Libraries research team can see it, and we look at it only in aggregate. We
+        never try to identify individual visitors.
+      </p>
+      <p>
+        Questions? Email <a href="mailto:info@communitydatalibraries.org">info@communitydatalibraries.org</a>.
+      </p>
+    </article>
+  </section>
+
+  <style>
+    .privacy-shell {
+      display: grid;
+      gap: var(--space-6);
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .eyebrow {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--color-text-muted);
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .intro {
+      margin: 0;
+      color: var(--color-text-muted);
+    }
+
+    .privacy-card {
+      display: grid;
+      gap: var(--space-3);
+      padding: var(--space-6);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg, 12px);
+    }
+
+    .privacy-card h2 {
+      margin: 0;
+      font-size: var(--font-size-xl);
+    }
+
+    .privacy-card p,
+    .privacy-card ul {
+      margin: 0;
+    }
+
+    .privacy-card ul {
+      display: grid;
+      gap: var(--space-2);
+      padding-left: 1.25rem;
+    }
+
+    .choice-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .button {
+      padding: 0.55rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #fff;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: var(--color-text);
+      border-color: var(--color-border);
+    }
+
+    .note {
+      color: var(--color-text-muted);
+      font-size: var(--font-size-sm);
+    }
+  </style>
+</Layout>

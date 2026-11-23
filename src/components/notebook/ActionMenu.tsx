@@ -2,6 +2,7 @@
 // whose commented pandas code is inserted and run as a visible notebook cell.
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { actionCell } from './codegen';
+import { track } from '@lib/client/analytics';
 import {
   MENU_ITEMS,
   OPS,
@@ -99,7 +100,8 @@ export default function ActionMenu({ columns, rows, disabled, disabledReason, on
 
   const action = kind ? buildAction(kind, form, columns, rows) : null;
   const submit = () => {
-    if (!action) return;
+    if (!action || !kind) return;
+    track('cleaning_step_added', { step: kind });
     onInsert(actionCell(action));
     close(true);
   };

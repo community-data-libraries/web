@@ -71,6 +71,7 @@ const joinHref = mainSiteHref(`/librarian/join/?slug=${encodeURIComponent(data.s
   </section>
 
   <script>
+    import { track } from '../../../lib/client/analytics';
     // Contact form: posts to the library-contact function, which forwards the message
     // to the librarians without ever exposing their emails to the page.
     const contactForm = document.getElementById('contact-form') as HTMLFormElement | null;
@@ -101,6 +102,7 @@ const joinHref = mainSiteHref(`/librarian/join/?slug=${encodeURIComponent(data.s
           const payload = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(payload.error ?? 'Your message could not be sent.');
           contactForm.reset();
+          track('librarian_contact_sent');
           status.textContent = 'Thanks! Your message was sent to the librarian.';
           status.dataset.state = 'ok';
         } catch (err) {
