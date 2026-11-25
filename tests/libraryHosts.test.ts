@@ -77,6 +77,8 @@ test('assets, functions and already-rewritten paths pass through on a library su
     '/web/api/community.json',
     '/api/library-contact',
     '/.netlify/functions/library-contact',
+    '/cdl-relay/e/',
+    '/cdl-relay/static/array.js',
     '/favicon.ico',
     '/communities/knox-county/',
     '/communities/knox-county/catalog/',

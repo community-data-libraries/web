@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { CellState } from './notebookStore';
 import { errorMessage, readSpecFor, type NotebookFile } from './notebookFiles';
 import { EXPORT_MIME, exportFilename, exportSourceFor, notebookJson, type ExportKind } from './exportPlan';
+import { track } from '@lib/client/analytics';
 
 interface Props {
   sourceId: string;
@@ -82,6 +83,7 @@ export default function ExportMenu({ sourceId, file, cells, exportDf, disabled, 
         const bytes = await exportDf(kind);
         download(new Uint8Array(bytes), EXPORT_MIME[kind], name);
       }
+      track('cleaning_exported', { format: kind, steps: cells.length });
     } catch (e) {
       setError(`Couldn't export: ${errorMessage(e)}`);
     } finally {

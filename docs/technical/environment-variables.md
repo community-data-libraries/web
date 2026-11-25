@@ -6,7 +6,7 @@ This guide covers every environment variable used by the Community Data Librarie
 
 | Location | Where to set it | Variables |
 |---|---|---|
-| Netlify (production site) | Netlify → Site configuration → Environment variables | [Metadata editor](#metadata-editor-netlify), [Librarian portal and contact form](#librarian-portal-and-contact-form-netlify), [Notifications](#notifications-netlify) |
+| Netlify (production site) | Netlify → Site configuration → Environment variables | [Metadata editor](#metadata-editor-netlify), [Librarian portal and contact form](#librarian-portal-and-contact-form-netlify), [Usage analytics](#usage-analytics-netlify), [Notifications](#notifications-netlify) |
 | GitHub Actions secret (backend repo) | `community-data-libraries/backend` → Settings → Secrets and variables → Actions → **Repository secrets** | [`NETLIFY_BUILD_HOOK`](#netlify_build_hook) |
 | Your computer (local development) | `web/.env`, or your shell | [Local development](#local-development-optional) |
 
@@ -135,6 +135,25 @@ Serve each community library on its own subdomain (web#31).
   them at runtime.
 - **If missing:** libraries stay at `/web/communities/<slug>/`, as before.
 - **Setup and DNS:** [netlify.md](netlify.md#library-subdomains-web31).
+
+---
+
+## Usage analytics (Netlify)
+
+Optional. Full setup, privacy choices and the list of recorded events: [analytics.md](analytics.md).
+
+### `PUBLIC_POSTHOG_KEY`
+**Optional · Public**
+
+The PostHog **Project API key** (`phc_...`). When it is unset, no analytics code runs and no notice is shown.
+
+- It is a write-only key that browsers need, so it is built into the pages on purpose and listed in `SECRETS_SCAN_OMIT_KEYS` in `netlify.toml`.
+- Read at build time: redeploy after changing it.
+
+### `PUBLIC_ANALYTICS_CONSENT`
+**Optional**
+
+`opt-in` (default): nothing is recorded until a visitor clicks **Allow**. `notice`: recorded unless the visitor turns it off. Read at build time.
 
 ---
 

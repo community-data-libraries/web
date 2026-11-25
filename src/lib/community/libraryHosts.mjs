@@ -122,7 +122,8 @@ export function routeLibraryRequest(url, { libraryDomain, mainSiteUrl: mainOrigi
   const slug = librarySlugForHost(host, domain);
 
   if (slug) {
-    if (pathname.startsWith('/.netlify/') || pathname.startsWith('/api/')) return null;
+    // /cdl-relay/ is the analytics proxy in netlify.toml (also excluded in the edge function config).
+    if (pathname.startsWith('/.netlify/') || pathname.startsWith('/api/') || pathname.startsWith('/cdl-relay/')) return null;
     if (pathname.startsWith(base) || `${pathname}/` === base) {
       if (hasExtension(pathname)) return null;
       const main = normalizeOrigin(mainOrigin);

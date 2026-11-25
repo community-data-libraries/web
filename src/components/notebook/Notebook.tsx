@@ -4,6 +4,7 @@
 import { Component, lazy, Suspense, useState, type ReactNode } from 'react';
 import type { NotebookSource } from './notebookExcel';
 import './notebook.css';
+import { track } from '@lib/client/analytics';
 
 const NotebookPanel = lazy(() => import('./NotebookPanel'));
 
@@ -52,7 +53,14 @@ export default function Notebook({ sources }: { sources: Record<string, Notebook
       ) : (
         <div className="nb-intro">
           <p>Write and run Python (pandas) right here. The first time takes a few seconds to load.</p>
-          <button type="button" className="btn-download" onClick={() => setOpen(true)}>
+          <button
+            type="button"
+            className="btn-download"
+            onClick={() => {
+              setOpen(true);
+              track('cleaning_tool_opened');
+            }}
+          >
             Open notebook
           </button>
         </div>

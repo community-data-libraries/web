@@ -65,6 +65,12 @@ These are settings that code can't change. Do them in this order.
 11. **Optional, for web#31:** the domain, Netlify DNS, wildcard and variable steps are in
     [netlify.md](netlify.md#library-subdomains-web31).
 
+## Usage analytics
+
+12. **Optional, after IRB approval:** create the PostHog project and set `PUBLIC_POSTHOG_KEY`,
+    `PUBLIC_ANALYTICS_CONSENT` and `SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES`. Steps are in
+    [analytics.md](analytics.md#setup).
+
 ## Check it
 
 - **Log in:** open `/web/librarian/login/`, create an account and confirm the email. Registering

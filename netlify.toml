@@ -10,7 +10,9 @@
   # - SITE_ORIGIN: the main site's address. It appears in the library-host edge
   #   function, which is deployed with its source (comments included).
   # - PUBLIC_MAIN_SITE_URL, PUBLIC_LIBRARY_DOMAIN: built into the pages on purpose.
-  SECRETS_SCAN_OMIT_KEYS = "GITHUB_REPO,SITE_ORIGIN,PUBLIC_MAIN_SITE_URL,PUBLIC_LIBRARY_DOMAIN"
+  # - PUBLIC_POSTHOG_KEY, PUBLIC_ANALYTICS_CONSENT: the analytics project key is a
+  #   public write-only token that browsers must have (docs/technical/analytics.md).
+  SECRETS_SCAN_OMIT_KEYS = "GITHUB_REPO,SITE_ORIGIN,PUBLIC_MAIN_SITE_URL,PUBLIC_LIBRARY_DOMAIN,PUBLIC_POSTHOG_KEY,PUBLIC_ANALYTICS_CONSENT"
 
 # ── Form submission webhook ──────────────────────────────────────────────────
 # Triggers the submission-notify function whenever a new form submission
@@ -29,6 +31,29 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# ── Usage analytics proxy ────────────────────────────────────────────────────
+# PostHog requests go through our own domain (/cdl-relay, see
+# src/lib/analytics/core.ts) so school networks and blockers don't drop them.
+# US region; for an EU project use eu-assets.i.posthog.com / eu.i.posthog.com.
+# These must stay above the /web/* rewrite. docs/technical/analytics.md
+[[redirects]]
+  from = "/cdl-relay/static/*"
+  to = "https://us-assets.i.posthog.com/static/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/cdl-relay/array/*"
+  to = "https://us-assets.i.posthog.com/array/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/cdl-relay/*"
+  to = "https://us.i.posthog.com/:splat"
+  status = 200
+  force = true
 
 # Librarian edit pages: one static page serves every library (it reads the slug
 # from the address), so libraries registered after the last build can be edited.
