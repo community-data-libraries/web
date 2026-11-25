@@ -40,13 +40,21 @@ const privacyHref = community ? mainSiteHref('/privacy') : withBasePath('/privac
       <div class="analytics-actions">
         {mode === 'opt-in' ? (
           <>
-            <button type="button" class="analytics-btn primary" data-consent="granted">Allow</button>
-            <button type="button" class="analytics-btn" data-consent="denied">No thanks</button>
+            <button type="button" class="analytics-btn primary" data-consent="granted">
+              Allow
+            </button>
+            <button type="button" class="analytics-btn" data-consent="denied">
+              No thanks
+            </button>
           </>
         ) : (
           <>
-            <button type="button" class="analytics-btn primary" data-consent="granted">OK</button>
-            <button type="button" class="analytics-btn" data-consent="denied">Turn off</button>
+            <button type="button" class="analytics-btn primary" data-consent="granted">
+              OK
+            </button>
+            <button type="button" class="analytics-btn" data-consent="denied">
+              Turn off
+            </button>
           </>
         )}
       </div>

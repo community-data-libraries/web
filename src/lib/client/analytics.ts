@@ -58,7 +58,11 @@ export function getConsent(): ConsentChoice | null {
 }
 
 function allowedNow(): boolean {
-  return analyticsConfigured() && !isExcludedPath(window.location.pathname) && analyticsAllowed(MODE, getConsent());
+  return (
+    analyticsConfigured() &&
+    !isExcludedPath(window.location.pathname) &&
+    analyticsAllowed(MODE, getConsent())
+  );
 }
 
 /** Record the visitor's choice and start or stop analytics to match. */
@@ -162,7 +166,9 @@ async function start(): Promise<Client | null> {
  */
 export function track(event: string, props: Props = {}, { leaving = false } = {}): void {
   if (!allowedNow()) return;
-  const options: CaptureOptions | undefined = leaving ? { transport: 'sendBeacon', send_instantly: true } : undefined;
+  const options: CaptureOptions | undefined = leaving
+    ? { transport: 'sendBeacon', send_instantly: true }
+    : undefined;
   if (client) {
     client.capture(event, props, options);
     return;
@@ -212,7 +218,11 @@ function listen(): void {
         { leaving: true }
       );
     } else if (el.id === 'preview-unavailable-link') {
-      track('dataset_provider_link_clicked', { destination: hostOf(link?.href) }, { leaving: true });
+      track(
+        'dataset_provider_link_clicked',
+        { destination: hostOf(link?.href) },
+        { leaving: true }
+      );
     } else if (el.matches('.view-btn[data-view]')) {
       track('catalog_layout_changed', { layout: (el as HTMLElement).dataset.view });
     } else if (el.id === 'catalog-reset-btn') {
@@ -227,9 +237,17 @@ function listen(): void {
     if (!field || field.tagName !== 'SELECT') return;
     if (field.closest('#catalog-filter-form')) {
       if (field.name === 'sort') track('catalog_sorted', { sort: field.value });
-      else if (field.value) track('catalog_filter_changed', { filter: field.name, value: field.value, results: resultCount() });
+      else if (field.value)
+        track('catalog_filter_changed', {
+          filter: field.name,
+          value: field.value,
+          results: resultCount(),
+        });
     } else if (field.id === 'county-filter' && field.value) {
-      track('preview_county_selected', { county_fips: field.value, state_fips: field.value.slice(0, 2) });
+      track('preview_county_selected', {
+        county_fips: field.value,
+        state_fips: field.value.slice(0, 2),
+      });
     } else if (field.id === 'plot-type-filter') {
       track('preview_chart_changed', { plot_type: field.value });
     }

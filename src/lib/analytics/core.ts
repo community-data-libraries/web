@@ -124,7 +124,12 @@ export function splitList(value: string | undefined | null): string[] {
 }
 
 // PostHog properties that hold a URL; all of them are sanitized before sending.
-const URL_PROPERTIES = ['$current_url', '$referrer', '$initial_referrer', '$prev_pageview_pathname'];
+const URL_PROPERTIES = [
+  '$current_url',
+  '$referrer',
+  '$initial_referrer',
+  '$prev_pageview_pathname',
+];
 
 interface OutgoingEvent {
   event: string;

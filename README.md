@@ -79,6 +79,7 @@ To use Decap on Netlify: enable Identity, enable **Git Gateway** under Identity 
 - Community libraries, librarian portal and functions: [docs/technical/community-store.md](docs/technical/community-store.md)
 - Netlify settings checklist: [docs/technical/netlify-setup-checklist.md](docs/technical/netlify-setup-checklist.md)
 - Environment variables: [docs/technical/environment-variables.md](docs/technical/environment-variables.md)
+- Usage analytics (PostHog, consent, events): [docs/technical/analytics.md](docs/technical/analytics.md)
 - Community library structure: [docs/data/community-library-structure.md](docs/data/community-library-structure.md)
 - Datasheet requirements: [docs/data/datasheet-requirements.md](docs/data/datasheet-requirements.md)
 - DecapCMS implementation: [docs/technical/decapcms-implementation.md](docs/technical/decapcms-implementation.md)

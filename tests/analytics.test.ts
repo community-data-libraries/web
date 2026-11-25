@@ -71,7 +71,10 @@ test('search terms are cleaned and personal-looking ones dropped', () => {
 });
 
 test('scrubEvent drops excluded pages and sanitizes URL properties', () => {
-  assert.equal(scrubEvent({ event: '$pageview', properties: { $pathname: '/web/librarian/login/' } }), null);
+  assert.equal(
+    scrubEvent({ event: '$pageview', properties: { $pathname: '/web/librarian/login/' } }),
+    null
+  );
   const event = scrubEvent({
     event: '$pageview',
     properties: {
